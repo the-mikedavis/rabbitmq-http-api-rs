@@ -37,11 +37,12 @@ fn test_create_vhost() {
     let result1 = rc.get_vhost(name);
     assert!(!result1.is_ok());
 
+    let desc = format!("{} description", &name);
     let params = VirtualHostParams {
         name,
-        description: &format!("{} description", &name),
-        tags: vec!["tag-a", "tag-b"],
-        default_queue_type: "classic",
+        description: Some(&desc),
+        tags: Some(vec!["tag-a", "tag-b"]),
+        default_queue_type: Some("classic"),
         tracing: false,
     };
     let result2 = rc.create_vhost(&params);
@@ -66,11 +67,12 @@ fn test_update_vhost() {
     let result1 = rc.get_vhost(name);
     assert!(!result1.is_ok());
 
+    let desc = format!("{} description", &name);
     let params1 = VirtualHostParams {
         name,
-        description: &format!("{} description", &name),
-        tags: vec!["tag-a", "tag-b"],
-        default_queue_type: "classic",
+        description: Some(&desc),
+        tags: Some(vec!["tag-a", "tag-b"]),
+        default_queue_type: Some("classic"),
         tracing: false,
     };
     let result2 = rc.create_vhost(&params1);
@@ -78,7 +80,7 @@ fn test_update_vhost() {
 
     let alt_desc = "altered description";
     let params2 = VirtualHostParams {
-        description: alt_desc,
+        description: Some(alt_desc),
         ..params1
     };
     let result3 = rc.update_vhost(&params2);
@@ -98,11 +100,12 @@ fn test_delete_vhost() {
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
     let name = "rust_test_delete_vhost";
 
+    let desc = format!("{} description", &name);
     let params = VirtualHostParams {
         name,
-        description: &format!("{} description", &name),
-        tags: vec!["tag-a", "tag-b"],
-        default_queue_type: "classic",
+        description: Some(&desc),
+        tags: Some(vec!["tag-a", "tag-b"]),
+        default_queue_type: Some("classic"),
         tracing: false,
     };
     let result1 = rc.create_vhost(&params);
