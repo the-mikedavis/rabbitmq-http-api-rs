@@ -71,6 +71,10 @@ impl<'a> Client<'a> {
     }
 
     pub fn create_vhost(&self, params: &VirtualHostParams) -> responses::Result<()> {
+        self.update_vhost(params)
+    }
+
+    pub fn update_vhost(&self, params: &VirtualHostParams) -> responses::Result<()> {
         let _ = self.http_put(&format!("vhosts/{}", self.percent_encode(&params.name)), params)?;
         Ok(())
     }

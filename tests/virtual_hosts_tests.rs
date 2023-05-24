@@ -51,6 +51,45 @@ fn test_create_vhost() {
     assert!(result3.is_ok());
     let vh2 = result3.unwrap();
     assert!(vh2.name == name);
+
+    let _ = rc.delete_vhost(&name);
+}
+
+#[test]
+fn test_update_vhost() {
+    let endpoint = endpoint();
+    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
+    let name = "rust_test_update_vhost";
+
+    let _ = rc.delete_vhost(&name);
+
+    let result1 = rc.get_vhost(name);
+    assert!(!result1.is_ok());
+
+    let params1 = VirtualHostParams {
+        name,
+        description: &format!("{} description", &name),
+        tags: vec!["tag-a", "tag-b"],
+        default_queue_type: "classic",
+        tracing: false,
+    };
+    let result2 = rc.create_vhost(&params1);
+    assert!(result2.is_ok());
+
+    let alt_desc = "altered description";
+    let params2 = VirtualHostParams {
+        description: alt_desc,
+        ..params1
+    };
+    let result3 = rc.update_vhost(&params2);
+    assert!(result3.is_ok());
+
+    let result4 = rc.get_vhost(name);
+    assert!(result4.is_ok());
+    let vh = result4.unwrap();
+    assert!(vh.description.unwrap() == alt_desc);
+
+    let _ = rc.delete_vhost(&name);
 }
 
 #[test]
