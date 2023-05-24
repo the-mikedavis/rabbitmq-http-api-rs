@@ -1,6 +1,7 @@
 use reqwest::blocking::Client as HttpClient;
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
-use crate::responses;
+use serde::Serialize;
+use crate::{responses, requests::VirtualHostParams};
 
 pub struct Client<'a> {
     endpoint: &'a str,
@@ -69,6 +70,11 @@ impl<'a> Client<'a> {
         Ok(node)
     }
 
+    pub fn create_vhost(&self, params: &VirtualHostParams) -> responses::Result<()> {
+        let _ = self.http_put(&format!("vhosts/{}", self.percent_encode(&params.name)), params)?;
+        Ok(())
+    }
+
     pub fn delete_vhost(&self, virtual_host: &str) -> responses::Result<()> {
         self.http_delete(&format!("vhosts/{}", self.percent_encode(virtual_host)))?;
         Ok(())
@@ -100,6 +106,15 @@ impl<'a> Client<'a> {
     fn http_get(&self, path: &str) -> reqwest::Result<reqwest::blocking::Response> {
         HttpClient::new()
             .get(self.rooted_path(path))
+            .basic_auth(self.username, self.password)
+            .send()
+    }
+
+    fn http_put<T>(&self, path: &str, payload: &T) -> reqwest::Result<reqwest::blocking::Response>
+    where T: Serialize {
+        HttpClient::new()
+            .put(self.rooted_path(path))
+            .json(&payload)
             .basic_auth(self.username, self.password)
             .send()
     }
