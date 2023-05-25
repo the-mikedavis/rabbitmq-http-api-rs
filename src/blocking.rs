@@ -1,7 +1,7 @@
-use reqwest::blocking::Client as HttpClient;
+use crate::{requests::VirtualHostParams, responses};
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
+use reqwest::blocking::Client as HttpClient;
 use serde::Serialize;
-use crate::{responses, requests::VirtualHostParams};
 
 pub struct Client<'a> {
     endpoint: &'a str,
@@ -14,7 +14,7 @@ impl<'a> Client<'a> {
         endpoint: &'a str,
         username: &'a str,
         password: Option<&'a str>,
-        ) -> Self {
+    ) -> Self {
         Self {
             endpoint: endpoint,
             username: username,
@@ -75,7 +75,10 @@ impl<'a> Client<'a> {
     }
 
     pub fn update_vhost(&self, params: &VirtualHostParams) -> responses::Result<()> {
-        let _ = self.http_put(&format!("vhosts/{}", self.percent_encode(&params.name)), params)?;
+        let _ = self.http_put(
+            &format!("vhosts/{}", self.percent_encode(&params.name)),
+            params,
+        )?;
         Ok(())
     }
 
@@ -90,12 +93,20 @@ impl<'a> Client<'a> {
     }
 
     pub fn delete_queue(&self, virtual_host: &str, name: &str) -> responses::Result<()> {
-        self.http_delete(&format!("queues/{}/{}", self.percent_encode(virtual_host), name))?;
+        self.http_delete(&format!(
+            "queues/{}/{}",
+            self.percent_encode(virtual_host),
+            name
+        ))?;
         Ok(())
     }
 
     pub fn purge_queue(&self, virtual_host: &str, name: &str) -> responses::Result<()> {
-        self.http_delete(&format!("queues/{}/{}/contents", self.percent_encode(virtual_host), name))?;
+        self.http_delete(&format!(
+            "queues/{}/{}/contents",
+            self.percent_encode(virtual_host),
+            name
+        ))?;
         Ok(())
     }
 
@@ -115,7 +126,9 @@ impl<'a> Client<'a> {
     }
 
     fn http_put<T>(&self, path: &str, payload: &T) -> reqwest::Result<reqwest::blocking::Response>
-    where T: Serialize {
+    where
+        T: Serialize,
+    {
         HttpClient::new()
             .put(self.rooted_path(path))
             .json(&payload)

@@ -1,7 +1,7 @@
-use rabbitmq_http_client::{blocking::Client};
+use rabbitmq_http_client::blocking::Client;
 
 mod common;
-use crate::common::{endpoint, USERNAME, PASSWORD};
+use crate::common::{endpoint, PASSWORD, USERNAME};
 
 #[test]
 fn test_list_users() {

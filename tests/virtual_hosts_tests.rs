@@ -1,14 +1,14 @@
 use rabbitmq_http_client::{blocking::Client, requests::VirtualHostParams};
 
 mod common;
-use crate::common::{endpoint, USERNAME, PASSWORD};
+use crate::common::{endpoint, PASSWORD, USERNAME};
 
 #[test]
 fn test_list_vhosts() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
     let result = rc.list_vhosts();
-    
+
     assert!(result.is_ok());
     let vec = result.unwrap();
     assert!(vec.iter().find(|vh| vh.name == "/").is_some())
