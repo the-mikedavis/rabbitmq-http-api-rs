@@ -1,4 +1,4 @@
-use crate::{requests::VirtualHostParams, responses};
+use crate::{requests::{VirtualHostParams, QueueParams}, responses};
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use reqwest::blocking::Client as HttpClient;
 use serde::Serialize;
@@ -47,6 +47,16 @@ impl<'a> Client<'a> {
         response.json::<Vec<responses::Channel>>()
     }
 
+    pub fn list_queues(&self) -> responses::Result<Vec<responses::QueueInfo>> {
+        let response = self.http_get("queues")?;
+        response.json::<Vec<responses::QueueInfo>>()
+    }
+
+    pub fn list_queues_in(&self, virtual_host: &str) -> responses::Result<Vec<responses::QueueInfo>> {
+        let response = self.http_get(&format!("queues/{}", self.percent_encode(virtual_host)))?;
+        response.json::<Vec<responses::QueueInfo>>()
+    }
+
     pub fn list_consumers(&self) -> responses::Result<Vec<responses::Consumer>> {
         let response = self.http_get("consumers")?;
         response.json::<Vec<responses::Consumer>>()
@@ -70,6 +80,15 @@ impl<'a> Client<'a> {
         Ok(node)
     }
 
+    pub fn get_queue_info(&self, virtual_host: &str, name: &str) -> responses::Result<responses::QueueInfo> {
+        let response0 = self.http_get(&format!("queues/{}/{}", self.percent_encode(&virtual_host), self.percent_encode(&name)));
+        println!("JSON: {:#?}", response0.unwrap().text().unwrap());
+
+        let response = self.http_get(&format!("queues/{}/{}", self.percent_encode(&virtual_host), self.percent_encode(&name)))?;
+        let queue = response.json::<responses::QueueInfo>()?;
+        Ok(queue)
+    }
+
     pub fn create_vhost(&self, params: &VirtualHostParams) -> responses::Result<()> {
         self.update_vhost(params)
     }
@@ -77,7 +96,15 @@ impl<'a> Client<'a> {
     pub fn update_vhost(&self, params: &VirtualHostParams) -> responses::Result<()> {
         let _ = self.http_put(
             &format!("vhosts/{}", self.percent_encode(&params.name)),
-            params,
+            params
+        )?;
+        Ok(())
+    }
+
+    pub fn declare_queue(&self, virtual_host: &str, params: &QueueParams) -> responses::Result<()> {
+        let _ = self.http_put(
+            &format!("queues/{}/{}", self.percent_encode(&virtual_host), self.percent_encode(&params.name)),
+            params
         )?;
         Ok(())
     }
@@ -96,7 +123,7 @@ impl<'a> Client<'a> {
         self.http_delete(&format!(
             "queues/{}/{}",
             self.percent_encode(virtual_host),
-            name
+            self.percent_encode(name)
         ))?;
         Ok(())
     }
@@ -105,7 +132,7 @@ impl<'a> Client<'a> {
         self.http_delete(&format!(
             "queues/{}/{}/contents",
             self.percent_encode(virtual_host),
-            name
+            self.percent_encode(name)
         ))?;
         Ok(())
     }

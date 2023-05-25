@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use reqwest;
 use serde::Deserialize;
 use serde_aux::prelude::*;
@@ -123,6 +125,49 @@ pub struct Consumer {
 pub struct NameAndVirtualHost {
     pub name: String,
     pub vhost: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)]
+pub struct QueueInfo {
+    pub name: String,
+    pub vhost: String,
+    #[serde(rename(deserialize = "type"))]
+    pub queue_type: String,
+    pub durable: bool,
+    pub auto_delete: bool,
+    pub exclusive: bool,
+    pub arguments: HashMap<String, serde_json::Value>,
+
+    pub node: String,
+    pub state: String,
+    // only quorum queues and streams will have this
+    pub leader: Option<String>,
+    pub members: Option<Vec<String>>,
+    pub online: Option<Vec<String>>,
+
+    pub memory: u64,
+    #[serde(rename(deserialize = "consumers"))]
+    pub consumer_count: u16,
+    pub consumer_utilisation: f32,
+    pub exclusive_consumer_tag: Option<String>,
+
+    pub policy: Option<String>,
+
+    pub message_bytes: u64,
+    pub message_bytes_persistent: u64,
+    pub message_bytes_ram: u64,
+    pub message_bytes_ready: u64,
+    pub message_bytes_unacknowledged: u64,
+
+    #[serde(rename(deserialize = "messages"))]
+    pub message_count: u64,
+    #[serde(rename(deserialize = "messages_persistent"))]
+    pub on_disk_message_count: u64,
+    #[serde(rename(deserialize = "messages_ram"))]
+    pub in_memory_message_count: u64,
+    #[serde(rename(deserialize = "messages_unacknowledged"))]
+    pub unacknowledged_message_count: u64,
 }
 
 #[derive(Debug, Deserialize)]
