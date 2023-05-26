@@ -1,4 +1,4 @@
-use rabbitmq_http_client::{blocking::Client, requests::VirtualHostParams};
+use rabbitmq_http_client::{blocking::Client, requests::{VirtualHostParams, QueueType}};
 
 mod common;
 use crate::common::{endpoint, PASSWORD, USERNAME};
@@ -42,7 +42,7 @@ fn test_create_vhost() {
         name,
         description: Some(&desc),
         tags: Some(vec!["tag-a", "tag-b"]),
-        default_queue_type: Some("classic"),
+        default_queue_type: Some(QueueType::Classic),
         tracing: false,
     };
     let result2 = rc.create_vhost(&params);
@@ -72,7 +72,7 @@ fn test_update_vhost() {
         name,
         description: Some(&desc),
         tags: Some(vec!["tag-a", "tag-b"]),
-        default_queue_type: Some("classic"),
+        default_queue_type: Some(QueueType::Classic),
         tracing: false,
     };
     let result2 = rc.create_vhost(&params1);
@@ -105,7 +105,7 @@ fn test_delete_vhost() {
         name,
         description: Some(&desc),
         tags: Some(vec!["tag-a", "tag-b"]),
-        default_queue_type: Some("classic"),
+        default_queue_type: Some(QueueType::Quorum),
         tracing: false,
     };
     let result1 = rc.create_vhost(&params);

@@ -9,7 +9,7 @@ pub struct VirtualHostParams<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tags: Option<Vec<&'a str>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub default_queue_type: Option<&'a str>,
+    pub default_queue_type: Option<QueueType>,
     pub tracing: bool,
 }
 
