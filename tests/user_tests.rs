@@ -1,4 +1,4 @@
-use rabbitmq_http_client::{blocking::Client, password_gen, requests::UserParams};
+use rabbitmq_http_client::{blocking::Client, password_hashing, requests::UserParams};
 
 mod common;
 use crate::common::{endpoint, PASSWORD, USERNAME};
@@ -31,9 +31,9 @@ fn test_user_creation() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
 
-    let salt = password_gen::salt();
+    let salt = password_hashing::salt();
     let password_hash =
-        password_gen::base64_encoded_salted_password_hash_sha256(&salt, &"rust3_t0p_sEkr37");
+        password_hashing::base64_encoded_salted_password_hash_sha256(&salt, &"rust3_t0p_sEkr37");
 
     let params = UserParams {
         name: "rust3",
@@ -49,9 +49,9 @@ fn test_user_deletion() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
 
-    let salt = password_gen::salt();
+    let salt = password_hashing::salt();
     let password_hash =
-        password_gen::base64_encoded_salted_password_hash_sha256(&salt, &"del3te_me");
+        password_hashing::base64_encoded_salted_password_hash_sha256(&salt, &"del3te_me");
 
     let name = "del3te_me";
     let params = UserParams {
