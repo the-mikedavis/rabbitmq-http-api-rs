@@ -22,6 +22,8 @@ pub struct UserParams<'a> {
     pub tags: Option<Vec<&'a str>>,
 }
 
+type XArguments = Option<Map<String, Value>>;
+
 pub enum QueueType {
     Classic,
     Quorum,
@@ -72,8 +74,6 @@ impl Serialize for QueueType {
         serializer.serialize_str(&s)
     }
 }
-
-type XArguments = Option<Map<String, Value>>;
 
 #[derive(Serialize)]
 pub struct QueueParams<'a> {
@@ -146,5 +146,65 @@ impl<'a> QueueParams<'a> {
         }
 
         Some(result)
+    }
+}
+
+
+#[derive(Serialize)]
+pub struct ExchangeParams<'a> {
+    pub name: &'a str,
+    #[serde(rename(serialize = "type"))]
+    pub exchange_type: &'a str,
+    pub durable: bool,
+    pub auto_delete: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub arguments: XArguments
+}
+
+impl<'a> ExchangeParams<'a> {
+    pub fn durable(name: &'a str, exchange_type: &'a str, optional_args: XArguments) -> Self {
+        Self::new(name, exchange_type, true, false, optional_args)
+    }
+
+    pub fn fanout(name: &'a str, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
+        Self::new(name, "fanout", durable, auto_delete, optional_args)
+    }
+
+    pub fn durable_fanout(name: &'a str, optional_args: XArguments) -> Self {
+        Self::new(name, "fanout", true, false, optional_args)
+    }
+
+    pub fn topic(name: &'a str, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
+        Self::new(name, "topic", durable, auto_delete, optional_args)
+    }
+
+    pub fn durable_topic(name: &'a str, optional_args: XArguments) -> Self {
+        Self::new(name, "topic", true, false, optional_args)
+    }
+
+    pub fn direct(name: &'a str, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
+        Self::new(name, "direct", durable, auto_delete, optional_args)
+    }
+
+    pub fn durable_direct(name: &'a str, optional_args: XArguments) -> Self {
+        Self::new(name, "direct", true, false, optional_args)
+    }
+
+    pub fn headers(name: &'a str, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
+        Self::new(name, "headers", durable, auto_delete, optional_args)
+    }
+
+    pub fn durable_headers(name: &'a str, optional_args: XArguments) -> Self {
+        Self::new(name, "headers", true, false, optional_args)
+    }
+
+    pub fn new(name: &'a str, exchange_type: &'a str, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
+        Self {
+            name,
+            exchange_type,
+            durable,
+            auto_delete,
+            arguments: optional_args
+        }
     }
 }

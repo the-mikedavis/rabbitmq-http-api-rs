@@ -127,6 +127,8 @@ pub struct NameAndVirtualHost {
     pub vhost: String,
 }
 
+type XArguments = HashMap<String, serde_json::Value>;
+
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
 pub struct QueueInfo {
@@ -137,7 +139,7 @@ pub struct QueueInfo {
     pub durable: bool,
     pub auto_delete: bool,
     pub exclusive: bool,
-    pub arguments: HashMap<String, serde_json::Value>,
+    pub arguments: XArguments,
 
     pub node: String,
     pub state: String,
@@ -168,6 +170,18 @@ pub struct QueueInfo {
     pub in_memory_message_count: u64,
     #[serde(rename(deserialize = "messages_unacknowledged"))]
     pub unacknowledged_message_count: u64,
+}
+
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)]
+pub struct ExchangeInfo {
+    pub name: String,
+    pub vhost: String,
+    #[serde(rename(deserialize = "type"))]
+    pub exchange_type: String,
+    pub durable: bool,
+    pub auto_delete: bool,
+    pub arguments: XArguments,
 }
 
 #[derive(Debug, Deserialize)]

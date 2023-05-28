@@ -1,4 +1,4 @@
-use crate::{requests::{VirtualHostParams, QueueParams}, responses};
+use crate::{requests::{VirtualHostParams, QueueParams, ExchangeParams}, responses};
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use reqwest::blocking::Client as HttpClient;
 use serde::Serialize;
@@ -57,6 +57,16 @@ impl<'a> Client<'a> {
         response.json::<Vec<responses::QueueInfo>>()
     }
 
+    pub fn list_exchanges(&self) -> responses::Result<Vec<responses::ExchangeInfo>> {
+        let response = self.http_get("exchanges")?;
+        response.json::<Vec<responses::ExchangeInfo>>()
+    }
+
+    pub fn list_exchanges_in(&self, virtual_host: &str) -> responses::Result<Vec<responses::ExchangeInfo>> {
+        let response = self.http_get(&format!("exchanges/{}", self.percent_encode(virtual_host)))?;
+        response.json::<Vec<responses::ExchangeInfo>>()
+    }
+
     pub fn list_consumers(&self) -> responses::Result<Vec<responses::Consumer>> {
         let response = self.http_get("consumers")?;
         response.json::<Vec<responses::Consumer>>()
@@ -81,12 +91,15 @@ impl<'a> Client<'a> {
     }
 
     pub fn get_queue_info(&self, virtual_host: &str, name: &str) -> responses::Result<responses::QueueInfo> {
-        let response0 = self.http_get(&format!("queues/{}/{}", self.percent_encode(&virtual_host), self.percent_encode(&name)));
-        println!("JSON: {:#?}", response0.unwrap().text().unwrap());
-
         let response = self.http_get(&format!("queues/{}/{}", self.percent_encode(&virtual_host), self.percent_encode(&name)))?;
         let queue = response.json::<responses::QueueInfo>()?;
         Ok(queue)
+    }
+
+    pub fn get_exchange_info(&self, virtual_host: &str, name: &str) -> responses::Result<responses::ExchangeInfo> {
+        let response = self.http_get(&format!("exchanges/{}/{}", self.percent_encode(&virtual_host), self.percent_encode(&name)))?;
+        let exchange = response.json::<responses::ExchangeInfo>()?;
+        Ok(exchange)
     }
 
     pub fn create_vhost(&self, params: &VirtualHostParams) -> responses::Result<()> {
@@ -109,6 +122,14 @@ impl<'a> Client<'a> {
         Ok(())
     }
 
+    pub fn declare_exchange(&self, virtual_host: &str, params: &ExchangeParams) -> responses::Result<()> {
+        let _ = self.http_put(
+            &format!("exchanges/{}/{}", self.percent_encode(&virtual_host), self.percent_encode(&params.name)),
+            params
+        )?;
+        Ok(())
+    }
+
     pub fn delete_vhost(&self, virtual_host: &str) -> responses::Result<()> {
         self.http_delete(&format!("vhosts/{}", self.percent_encode(virtual_host)))?;
         Ok(())
@@ -122,6 +143,15 @@ impl<'a> Client<'a> {
     pub fn delete_queue(&self, virtual_host: &str, name: &str) -> responses::Result<()> {
         self.http_delete(&format!(
             "queues/{}/{}",
+            self.percent_encode(virtual_host),
+            self.percent_encode(name)
+        ))?;
+        Ok(())
+    }
+
+    pub fn delete_exchange(&self, virtual_host: &str, name: &str) -> responses::Result<()> {
+        self.http_delete(&format!(
+            "exchanges/{}/{}",
             self.percent_encode(virtual_host),
             self.percent_encode(name)
         ))?;
