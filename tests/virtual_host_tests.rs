@@ -1,4 +1,7 @@
-use rabbitmq_http_client::{blocking::Client, requests::{VirtualHostParams, QueueType}};
+use rabbitmq_http_client::{
+    blocking::Client,
+    requests::{QueueType, VirtualHostParams},
+};
 
 mod common;
 use crate::common::{endpoint, PASSWORD, USERNAME};

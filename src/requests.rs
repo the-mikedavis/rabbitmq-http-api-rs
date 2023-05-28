@@ -1,5 +1,5 @@
 use serde::Serialize;
-use serde_json::{Value, Map};
+use serde_json::{Map, Value};
 
 #[derive(Serialize)]
 pub struct VirtualHostParams<'a> {
@@ -16,10 +16,8 @@ pub struct VirtualHostParams<'a> {
 #[derive(Serialize)]
 pub struct UserParams<'a> {
     pub name: &'a str,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub password_hash: Option<&'a str>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub tags: Option<Vec<&'a str>>,
+    pub password_hash: &'a str,
+    pub tags: &'a str,
 }
 
 type XArguments = Option<Map<String, Value>>;
@@ -27,7 +25,7 @@ type XArguments = Option<Map<String, Value>>;
 pub enum QueueType {
     Classic,
     Quorum,
-    Stream
+    Stream,
 }
 
 impl From<&str> for QueueType {
@@ -36,7 +34,7 @@ impl From<&str> for QueueType {
             "classic" => QueueType::Classic,
             "quorum" => QueueType::Quorum,
             "stream" => QueueType::Stream,
-            _ => QueueType::Classic
+            _ => QueueType::Classic,
         }
     }
 }
@@ -47,7 +45,7 @@ impl From<String> for QueueType {
             "classic" => QueueType::Classic,
             "quorum" => QueueType::Quorum,
             "stream" => QueueType::Stream,
-            _ => QueueType::Classic
+            _ => QueueType::Classic,
         }
     }
 }
@@ -57,7 +55,7 @@ impl Into<String> for QueueType {
         match self {
             QueueType::Classic => "classic".to_owned(),
             QueueType::Quorum => "quorum".to_owned(),
-            QueueType::Stream => "stream".to_owned()
+            QueueType::Stream => "stream".to_owned(),
         }
     }
 }
@@ -65,11 +63,12 @@ impl Into<String> for QueueType {
 impl Serialize for QueueType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer {
+        S: serde::Serializer,
+    {
         let s = match *self {
             QueueType::Classic => "classic",
             QueueType::Quorum => "quorum",
-            QueueType::Stream => "stream"
+            QueueType::Stream => "stream",
         };
         serializer.serialize_str(&s)
     }
@@ -98,18 +97,18 @@ pub enum ExchangeType {
     /// Recent history exchange
     RecentHistory,
     /// All other x-* exchange types, for example, those provided by plugins
-    Plugin(String)
+    Plugin(String),
 }
 
 const EXCHANGE_TYPE_FANOUT: &str = "fanout";
-const EXCHANGE_TYPE_TOPIC:  &str = "topic";
-const EXCHANGE_TYPE_DIRECT:  &str = "direct";
-const EXCHANGE_TYPE_HEADERS:  &str = "headers";
-const EXCHANGE_TYPE_CONSISTENT_HASHING:  &str = "x-consistent-hash";
-const EXCHANGE_TYPE_MODULUS_HASH:  &str = "x-modulus-hash";
-const EXCHANGE_TYPE_RANDOM:  &str = "x-random";
-const EXCHANGE_TYPE_JMS_TOPIC:  &str = "x-jms-topic";
-const EXCHANGE_TYPE_RECENT_HISTORY:  &str = "x-recent-history";
+const EXCHANGE_TYPE_TOPIC: &str = "topic";
+const EXCHANGE_TYPE_DIRECT: &str = "direct";
+const EXCHANGE_TYPE_HEADERS: &str = "headers";
+const EXCHANGE_TYPE_CONSISTENT_HASHING: &str = "x-consistent-hash";
+const EXCHANGE_TYPE_MODULUS_HASH: &str = "x-modulus-hash";
+const EXCHANGE_TYPE_RANDOM: &str = "x-random";
+const EXCHANGE_TYPE_JMS_TOPIC: &str = "x-jms-topic";
+const EXCHANGE_TYPE_RECENT_HISTORY: &str = "x-recent-history";
 
 impl From<&str> for ExchangeType {
     fn from(value: &str) -> Self {
@@ -123,7 +122,7 @@ impl From<&str> for ExchangeType {
             EXCHANGE_TYPE_RANDOM => ExchangeType::Random,
             EXCHANGE_TYPE_JMS_TOPIC => ExchangeType::JmsTopic,
             EXCHANGE_TYPE_RECENT_HISTORY => ExchangeType::RecentHistory,
-            other => ExchangeType::Plugin(other.to_owned())
+            other => ExchangeType::Plugin(other.to_owned()),
         }
     }
 }
@@ -146,7 +145,7 @@ impl From<ExchangeType> for String {
             ExchangeType::Random => EXCHANGE_TYPE_RANDOM.to_owned(),
             ExchangeType::JmsTopic => EXCHANGE_TYPE_JMS_TOPIC.to_owned(),
             ExchangeType::RecentHistory => EXCHANGE_TYPE_RECENT_HISTORY.to_owned(),
-            ExchangeType::Plugin(exchange_type) => exchange_type
+            ExchangeType::Plugin(exchange_type) => exchange_type,
         }
     }
 }
@@ -160,7 +159,7 @@ pub struct QueueParams<'a> {
     pub auto_delete: bool,
     pub exclusive: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub arguments: XArguments
+    pub arguments: XArguments,
 }
 
 impl<'a> QueueParams<'a> {
@@ -172,7 +171,7 @@ impl<'a> QueueParams<'a> {
             durable: true,
             auto_delete: false,
             exclusive: false,
-            arguments: args
+            arguments: args,
         }
     }
 
@@ -184,7 +183,7 @@ impl<'a> QueueParams<'a> {
             durable: true,
             auto_delete: false,
             exclusive: false,
-            arguments: args
+            arguments: args,
         }
     }
 
@@ -196,7 +195,7 @@ impl<'a> QueueParams<'a> {
             durable: true,
             auto_delete: false,
             exclusive: false,
-            arguments: args
+            arguments: args,
         }
     }
 
@@ -208,7 +207,7 @@ impl<'a> QueueParams<'a> {
             durable: false,
             auto_delete: false,
             exclusive: true,
-            arguments: args
+            arguments: args,
         }
     }
 
@@ -218,13 +217,12 @@ impl<'a> QueueParams<'a> {
 
         match optional_args {
             Some(mut val) => result.append(&mut val),
-            None => ()
+            None => (),
         }
 
         Some(result)
     }
 }
-
 
 #[derive(Serialize)]
 pub struct ExchangeParams<'a> {
@@ -234,7 +232,7 @@ pub struct ExchangeParams<'a> {
     pub durable: bool,
     pub auto_delete: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub arguments: XArguments
+    pub arguments: XArguments,
 }
 
 impl<'a> ExchangeParams<'a> {
@@ -242,45 +240,95 @@ impl<'a> ExchangeParams<'a> {
         Self::new(name, exchange_type, true, false, optional_args)
     }
 
-    pub fn fanout(name: &'a str, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
-        Self::new(name, ExchangeType::Fanout, durable, auto_delete, optional_args)
+    pub fn fanout(
+        name: &'a str,
+        durable: bool,
+        auto_delete: bool,
+        optional_args: XArguments,
+    ) -> Self {
+        Self::new(
+            name,
+            ExchangeType::Fanout,
+            durable,
+            auto_delete,
+            optional_args,
+        )
     }
 
     pub fn durable_fanout(name: &'a str, optional_args: XArguments) -> Self {
         Self::new(name, ExchangeType::Fanout, true, false, optional_args)
     }
 
-    pub fn topic(name: &'a str, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
-        Self::new(name, ExchangeType::Topic, durable, auto_delete, optional_args)
+    pub fn topic(
+        name: &'a str,
+        durable: bool,
+        auto_delete: bool,
+        optional_args: XArguments,
+    ) -> Self {
+        Self::new(
+            name,
+            ExchangeType::Topic,
+            durable,
+            auto_delete,
+            optional_args,
+        )
     }
 
     pub fn durable_topic(name: &'a str, optional_args: XArguments) -> Self {
         Self::new(name, ExchangeType::Topic, true, false, optional_args)
     }
 
-    pub fn direct(name: &'a str, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
-        Self::new(name, ExchangeType::Direct, durable, auto_delete, optional_args)
+    pub fn direct(
+        name: &'a str,
+        durable: bool,
+        auto_delete: bool,
+        optional_args: XArguments,
+    ) -> Self {
+        Self::new(
+            name,
+            ExchangeType::Direct,
+            durable,
+            auto_delete,
+            optional_args,
+        )
     }
 
     pub fn durable_direct(name: &'a str, optional_args: XArguments) -> Self {
         Self::new(name, ExchangeType::Direct, true, false, optional_args)
     }
 
-    pub fn headers(name: &'a str, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
-        Self::new(name, ExchangeType::Headers, durable, auto_delete, optional_args)
+    pub fn headers(
+        name: &'a str,
+        durable: bool,
+        auto_delete: bool,
+        optional_args: XArguments,
+    ) -> Self {
+        Self::new(
+            name,
+            ExchangeType::Headers,
+            durable,
+            auto_delete,
+            optional_args,
+        )
     }
 
     pub fn durable_headers(name: &'a str, optional_args: XArguments) -> Self {
         Self::new(name, ExchangeType::Headers, true, false, optional_args)
     }
 
-    pub fn new(name: &'a str, exchange_type: ExchangeType, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
+    pub fn new(
+        name: &'a str,
+        exchange_type: ExchangeType,
+        durable: bool,
+        auto_delete: bool,
+        optional_args: XArguments,
+    ) -> Self {
         Self {
             name,
             exchange_type,
             durable,
             auto_delete,
-            arguments: optional_args
+            arguments: optional_args,
         }
     }
 }

@@ -1,4 +1,4 @@
-use rabbitmq_http_client::blocking::Client;
+use rabbitmq_http_client::{blocking::Client, password_gen, requests::UserParams};
 
 mod common;
 use crate::common::{endpoint, PASSWORD, USERNAME};
@@ -24,4 +24,44 @@ fn test_get_user() {
     assert!(result.is_ok());
     let u = result.unwrap();
     assert!(u.name == name);
+}
+
+#[test]
+fn test_user_creation() {
+    let endpoint = endpoint();
+    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
+
+    let salt = password_gen::salt();
+    let password_hash =
+        password_gen::base64_encoded_salted_password_hash_sha256(&salt, &"rust3_t0p_sEkr37");
+
+    let params = UserParams {
+        name: "rust3",
+        password_hash: &password_hash,
+        tags: "management",
+    };
+    let result = rc.create_user(&params);
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_user_deletion() {
+    let endpoint = endpoint();
+    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
+
+    let salt = password_gen::salt();
+    let password_hash =
+        password_gen::base64_encoded_salted_password_hash_sha256(&salt, &"del3te_me");
+
+    let name = "del3te_me";
+    let params = UserParams {
+        name: name,
+        password_hash: &password_hash,
+        tags: "management",
+    };
+    let result1 = rc.create_user(&params);
+    assert!(result1.is_ok());
+
+    let result2 = rc.delete_user(&name);
+    assert!(result2.is_ok());
 }

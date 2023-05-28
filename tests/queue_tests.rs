@@ -1,5 +1,5 @@
 use rabbitmq_http_client::{blocking::Client, requests::QueueParams};
-use serde_json::{Value, Map, json};
+use serde_json::{json, Map, Value};
 
 mod common;
 use crate::common::{endpoint, PASSWORD, USERNAME};
@@ -73,7 +73,7 @@ fn test_delete_queue() {
 fn test_list_all_queues() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
-    
+
     let result1 = rc.list_queues();
     assert!(result1.is_ok());
 }

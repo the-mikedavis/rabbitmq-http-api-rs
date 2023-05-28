@@ -1,5 +1,5 @@
 use rabbitmq_http_client::{blocking::Client, requests::ExchangeParams};
-use serde_json::{Value, Map, json};
+use serde_json::{json, Map, Value};
 
 mod common;
 use crate::common::{endpoint, PASSWORD, USERNAME};
@@ -39,7 +39,7 @@ fn test_delete_exchange() {
     assert!(!result1.is_ok());
 
     let params = ExchangeParams::durable_fanout(&name, None);
-        let result2 = rc.declare_exchange(&vhost, &params);
+    let result2 = rc.declare_exchange(&vhost, &params);
     assert!(result2.is_ok());
 
     let _ = rc.delete_exchange(&vhost, &name);
