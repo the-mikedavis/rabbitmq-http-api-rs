@@ -75,6 +75,82 @@ impl Serialize for QueueType {
     }
 }
 
+/// Exchange types. Most variants are for exchange types included with modern RabbitMQ distributions.
+/// For custom types provided by 3rd party plugins, use the `Plugin(String)` variant.
+#[derive(Serialize, Debug, PartialEq, Eq)]
+pub enum ExchangeType {
+    /// Fanout exchange
+    Fanout,
+    /// Topic exchange
+    Topic,
+    /// Direct exchange
+    Direct,
+    /// Headers exchange
+    Headers,
+    /// Consistent hashing (consistent hash) exchange
+    ConsistentHashing,
+    /// Modulus hash, ships with the 'rabbitmq-sharding' plugin
+    ModulusHash,
+    /// Random exchange
+    Random,
+    /// JMS topic exchange
+    JmsTopic,
+    /// Recent history exchange
+    RecentHistory,
+    /// All other x-* exchange types, for example, those provided by plugins
+    Plugin(String)
+}
+
+const EXCHANGE_TYPE_FANOUT: &str = "fanout";
+const EXCHANGE_TYPE_TOPIC:  &str = "topic";
+const EXCHANGE_TYPE_DIRECT:  &str = "direct";
+const EXCHANGE_TYPE_HEADERS:  &str = "headers";
+const EXCHANGE_TYPE_CONSISTENT_HASHING:  &str = "x-consistent-hash";
+const EXCHANGE_TYPE_MODULUS_HASH:  &str = "x-modulus-hash";
+const EXCHANGE_TYPE_RANDOM:  &str = "x-random";
+const EXCHANGE_TYPE_JMS_TOPIC:  &str = "x-jms-topic";
+const EXCHANGE_TYPE_RECENT_HISTORY:  &str = "x-recent-history";
+
+impl From<&str> for ExchangeType {
+    fn from(value: &str) -> Self {
+        match value {
+            EXCHANGE_TYPE_FANOUT => ExchangeType::Fanout,
+            EXCHANGE_TYPE_TOPIC => ExchangeType::Topic,
+            EXCHANGE_TYPE_DIRECT => ExchangeType::Direct,
+            EXCHANGE_TYPE_HEADERS => ExchangeType::Headers,
+            EXCHANGE_TYPE_CONSISTENT_HASHING => ExchangeType::ConsistentHashing,
+            EXCHANGE_TYPE_MODULUS_HASH => ExchangeType::ModulusHash,
+            EXCHANGE_TYPE_RANDOM => ExchangeType::Random,
+            EXCHANGE_TYPE_JMS_TOPIC => ExchangeType::JmsTopic,
+            EXCHANGE_TYPE_RECENT_HISTORY => ExchangeType::RecentHistory,
+            other => ExchangeType::Plugin(other.to_owned())
+        }
+    }
+}
+
+impl From<String> for ExchangeType {
+    fn from(value: String) -> Self {
+        ExchangeType::from(value.as_str())
+    }
+}
+
+impl From<ExchangeType> for String {
+    fn from(value: ExchangeType) -> String {
+        match value {
+            ExchangeType::Fanout => EXCHANGE_TYPE_FANOUT.to_owned(),
+            ExchangeType::Topic => EXCHANGE_TYPE_TOPIC.to_owned(),
+            ExchangeType::Direct => EXCHANGE_TYPE_DIRECT.to_owned(),
+            ExchangeType::Headers => EXCHANGE_TYPE_HEADERS.to_owned(),
+            ExchangeType::ConsistentHashing => EXCHANGE_TYPE_CONSISTENT_HASHING.to_owned(),
+            ExchangeType::ModulusHash => EXCHANGE_TYPE_MODULUS_HASH.to_owned(),
+            ExchangeType::Random => EXCHANGE_TYPE_RANDOM.to_owned(),
+            ExchangeType::JmsTopic => EXCHANGE_TYPE_JMS_TOPIC.to_owned(),
+            ExchangeType::RecentHistory => EXCHANGE_TYPE_RECENT_HISTORY.to_owned(),
+            ExchangeType::Plugin(exchange_type) => exchange_type
+        }
+    }
+}
+
 #[derive(Serialize)]
 pub struct QueueParams<'a> {
     pub name: &'a str,
@@ -154,7 +230,7 @@ impl<'a> QueueParams<'a> {
 pub struct ExchangeParams<'a> {
     pub name: &'a str,
     #[serde(rename(serialize = "type"))]
-    pub exchange_type: &'a str,
+    pub exchange_type: ExchangeType,
     pub durable: bool,
     pub auto_delete: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -162,43 +238,43 @@ pub struct ExchangeParams<'a> {
 }
 
 impl<'a> ExchangeParams<'a> {
-    pub fn durable(name: &'a str, exchange_type: &'a str, optional_args: XArguments) -> Self {
+    pub fn durable(name: &'a str, exchange_type: ExchangeType, optional_args: XArguments) -> Self {
         Self::new(name, exchange_type, true, false, optional_args)
     }
 
     pub fn fanout(name: &'a str, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
-        Self::new(name, "fanout", durable, auto_delete, optional_args)
+        Self::new(name, ExchangeType::Fanout, durable, auto_delete, optional_args)
     }
 
     pub fn durable_fanout(name: &'a str, optional_args: XArguments) -> Self {
-        Self::new(name, "fanout", true, false, optional_args)
+        Self::new(name, ExchangeType::Fanout, true, false, optional_args)
     }
 
     pub fn topic(name: &'a str, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
-        Self::new(name, "topic", durable, auto_delete, optional_args)
+        Self::new(name, ExchangeType::Topic, durable, auto_delete, optional_args)
     }
 
     pub fn durable_topic(name: &'a str, optional_args: XArguments) -> Self {
-        Self::new(name, "topic", true, false, optional_args)
+        Self::new(name, ExchangeType::Topic, true, false, optional_args)
     }
 
     pub fn direct(name: &'a str, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
-        Self::new(name, "direct", durable, auto_delete, optional_args)
+        Self::new(name, ExchangeType::Direct, durable, auto_delete, optional_args)
     }
 
     pub fn durable_direct(name: &'a str, optional_args: XArguments) -> Self {
-        Self::new(name, "direct", true, false, optional_args)
+        Self::new(name, ExchangeType::Direct, true, false, optional_args)
     }
 
     pub fn headers(name: &'a str, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
-        Self::new(name, "headers", durable, auto_delete, optional_args)
+        Self::new(name, ExchangeType::Headers, durable, auto_delete, optional_args)
     }
 
     pub fn durable_headers(name: &'a str, optional_args: XArguments) -> Self {
-        Self::new(name, "headers", true, false, optional_args)
+        Self::new(name, ExchangeType::Headers, true, false, optional_args)
     }
 
-    pub fn new(name: &'a str, exchange_type: &'a str, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
+    pub fn new(name: &'a str, exchange_type: ExchangeType, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
         Self {
             name,
             exchange_type,
