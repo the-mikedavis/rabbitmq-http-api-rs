@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::{
     requests::{ExchangeParams, QueueParams, UserParams, VirtualHostParams},
     responses,
@@ -210,6 +212,20 @@ impl<'a> Client<'a> {
             self.percent_encode(virtual_host),
             self.percent_encode(name)
         ))?;
+        Ok(())
+    }
+
+    pub fn get_cluster_name(&self) -> responses::Result<responses::ClusterIdentity> {
+        let response = self.http_get("cluster-name")?;
+        let id = response.json::<responses::ClusterIdentity>()?;
+        Ok(id)
+    }
+
+    pub fn set_cluster_name(&self, new_name: &str) -> responses::Result<()> {
+        let mut map = HashMap::new();
+        map.insert("name", new_name);
+
+        let _ = self.http_put("cluster-name", &map)?;
         Ok(())
     }
 

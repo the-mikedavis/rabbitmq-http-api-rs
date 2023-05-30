@@ -207,3 +207,10 @@ pub struct ClusterNode {
     pub has_free_disk_space_alarm_in_effect: bool,
     pub rates_mode: String,
 }
+
+
+#[derive(Debug, Deserialize)]
+#[allow(dead_code)]
+pub struct ClusterIdentity {
+    pub name: String
+}
