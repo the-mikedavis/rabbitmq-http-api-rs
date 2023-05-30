@@ -34,5 +34,3 @@ fn test_set_cluster_name() {
 
     let _ = rc.set_cluster_name(&meta1.name);
 }
-
-

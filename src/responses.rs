@@ -208,9 +208,8 @@ pub struct ClusterNode {
     pub rates_mode: String,
 }
 
-
 #[derive(Debug, Deserialize)]
 #[allow(dead_code)]
 pub struct ClusterIdentity {
-    pub name: String
+    pub name: String,
 }
