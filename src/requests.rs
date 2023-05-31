@@ -332,3 +332,13 @@ impl<'a> ExchangeParams<'a> {
         }
     }
 }
+
+type RuntimeParameterValue = Map<String, Value>;
+
+#[derive(Serialize)]
+pub struct RuntimeParameterDefinition {
+    pub name: String,
+    pub vhost: String,
+    pub component: String,
+    pub value: RuntimeParameterValue,
+}

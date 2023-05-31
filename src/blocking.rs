@@ -1,12 +1,13 @@
-use std::collections::HashMap;
-
 use crate::{
-    requests::{ExchangeParams, QueueParams, UserParams, VirtualHostParams},
+    requests::{
+        ExchangeParams, QueueParams, RuntimeParameterDefinition, UserParams, VirtualHostParams,
+    },
     responses,
 };
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use reqwest::blocking::Client as HttpClient;
 use serde::Serialize;
+use std::collections::HashMap;
 
 pub struct Client<'a> {
     endpoint: &'a str,
@@ -212,6 +213,67 @@ impl<'a> Client<'a> {
             self.percent_encode(virtual_host),
             self.percent_encode(name)
         ))?;
+        Ok(())
+    }
+
+    pub fn list_runtime_parameters(&self) -> responses::Result<Vec<responses::RuntimeParameter>> {
+        let response = self.http_get("parameters")?;
+        response.json::<Vec<responses::RuntimeParameter>>()
+    }
+
+    pub fn list_runtime_parameters_of_component(&self, component: &str) -> responses::Result<Vec<responses::RuntimeParameter>> {
+        let path = format!("parameters/{}", self.percent_encode(component));
+        let response = self.http_get(&path)?;
+        response.json::<Vec<responses::RuntimeParameter>>()
+    }
+
+    pub fn list_runtime_parameters_of_component_in(&self, component: &str, vhost: &str) -> responses::Result<Vec<responses::RuntimeParameter>> {
+        let path = format!("parameters/{}/{}", self.percent_encode(component), self.percent_encode(vhost));
+        let response = self.http_get(&path)?;
+        response.json::<Vec<responses::RuntimeParameter>>()
+    }
+
+    pub fn get_runtime_parameter(&self, component: &str, vhost: &str, name: &str) -> responses::Result<responses::RuntimeParameter> {
+        let path = format!("parameters/{}/{}/{}", self.percent_encode(component), self.percent_encode(vhost), self.percent_encode(name));
+        let response = self.http_get(&path)?;
+        response.json::<responses::RuntimeParameter>()
+    }
+
+    pub fn upsert_runtime_parameter(
+        &self,
+        param: &RuntimeParameterDefinition,
+    ) -> responses::Result<()> {
+        let path = format!(
+            "parameters/{}/{}/{}",
+            self.percent_encode(&param.component),
+            self.percent_encode(&param.vhost),
+            self.percent_encode(&param.name)
+        );
+        self.http_put(&path, &param)?;
+        Ok(())
+    }
+
+    pub fn clear_runtime_parameter(
+        &self,
+        component: &str,
+        vhost: &str,
+        name: &str,
+    ) -> responses::Result<()> {
+        let path = format!(
+            "parameters/{}/{}/{}",
+            self.percent_encode(&component),
+            self.percent_encode(&vhost),
+            self.percent_encode(&name)
+        );
+        self.http_delete(&path)?;
+        Ok(())
+    }
+
+    pub fn clear_all_runtime_parameters(&self) -> responses::Result<()> {
+        let params = self.list_runtime_parameters()?;
+        for rp in params {
+            self.clear_runtime_parameter(&rp.component, &rp.vhost, &rp.name)?
+        }
         Ok(())
     }
 

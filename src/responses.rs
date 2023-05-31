@@ -1,13 +1,12 @@
-use std::collections::HashMap;
-
 use reqwest;
 use serde::Deserialize;
 use serde_aux::prelude::*;
+use serde_json::Map;
 
 pub type Error = reqwest::Error;
 pub type Result<T> = std::result::Result<T, reqwest::Error>;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct VirtualHostMetadata {
     pub tags: Option<Vec<String>>,
@@ -15,7 +14,7 @@ pub struct VirtualHostMetadata {
     pub default_queue_type: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct VirtualHost {
     pub name: String,
@@ -25,7 +24,7 @@ pub struct VirtualHost {
     pub metadata: VirtualHostMetadata,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct User {
     pub name: String,
@@ -33,7 +32,7 @@ pub struct User {
     pub password_hash: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct Connection {
     pub name: String,
@@ -57,7 +56,7 @@ pub struct Connection {
     pub client_properties: ClientProperties,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClientProperties {
     pub connection_name: String,
@@ -67,7 +66,7 @@ pub struct ClientProperties {
     pub capabilities: ClientCapabilities,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClientCapabilities {
     pub authentication_failure_close: bool,
@@ -82,7 +81,7 @@ pub struct ClientCapabilities {
     pub publisher_confirms: bool,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct Channel {
     #[serde(rename(deserialize = "number"))]
@@ -99,7 +98,7 @@ pub struct Channel {
     pub messages_unconfirmed: u32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ConnectionDetails {
     pub name: String,
@@ -109,7 +108,7 @@ pub struct ConnectionDetails {
     pub client_port: u32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct Consumer {
     pub consumer_tag: String,
@@ -120,16 +119,17 @@ pub struct Consumer {
     pub queue: NameAndVirtualHost,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct NameAndVirtualHost {
     pub name: String,
     pub vhost: String,
 }
 
-type XArguments = HashMap<String, serde_json::Value>;
+type XArguments = Map<String, serde_json::Value>;
+type RuntimeParameterValue = Map<String, serde_json::Value>;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct QueueInfo {
     pub name: String,
@@ -172,7 +172,7 @@ pub struct QueueInfo {
     pub unacknowledged_message_count: u64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ExchangeInfo {
     pub name: String,
@@ -184,7 +184,7 @@ pub struct ExchangeInfo {
     pub arguments: XArguments,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClusterNode {
     pub name: String,
@@ -208,7 +208,16 @@ pub struct ClusterNode {
     pub rates_mode: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
+#[allow(dead_code)]
+pub struct RuntimeParameter {
+    pub name: String,
+    pub vhost: String,
+    pub component: String,
+    pub value: RuntimeParameterValue,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClusterIdentity {
     pub name: String,
