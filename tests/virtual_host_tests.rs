@@ -1,7 +1,4 @@
-use rabbitmq_http_client::{
-    blocking::Client,
-    requests::{QueueType, VirtualHostParams},
-};
+use rabbitmq_http_client::{blocking::Client, commons::QueueType, requests::VirtualHostParams};
 
 mod common;
 use crate::common::{endpoint, PASSWORD, USERNAME};
@@ -115,6 +112,7 @@ fn test_delete_vhost() {
     assert!(result1.is_ok());
 
     let result2 = rc.get_vhost(name);
+    dbg!(&result2);
     assert!(result2.is_ok());
 
     let _ = rc.delete_vhost(&name);

@@ -1,3 +1,4 @@
+use crate::commons::BindingDestinationType;
 use reqwest;
 use serde::Deserialize;
 use serde_aux::prelude::*;
@@ -126,8 +127,8 @@ pub struct NameAndVirtualHost {
     pub vhost: String,
 }
 
-type XArguments = Map<String, serde_json::Value>;
-type RuntimeParameterValue = Map<String, serde_json::Value>;
+pub type XArguments = Map<String, serde_json::Value>;
+pub type RuntimeParameterValue = Map<String, serde_json::Value>;
 
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
@@ -182,6 +183,18 @@ pub struct ExchangeInfo {
     pub durable: bool,
     pub auto_delete: bool,
     pub arguments: XArguments,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[allow(dead_code)]
+pub struct BindingInfo {
+    pub vhost: String,
+    pub source: String,
+    pub destination: String,
+    pub destination_type: BindingDestinationType,
+    pub routing_key: String,
+    pub arguments: XArguments,
+    pub properties_key: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]

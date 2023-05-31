@@ -1,12 +1,14 @@
 use crate::{
     requests::{
         ExchangeParams, QueueParams, RuntimeParameterDefinition, UserParams, VirtualHostParams,
+        XArguments
     },
     responses,
 };
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use reqwest::blocking::Client as HttpClient;
 use serde::Serialize;
+use serde_json::{json, Map, Value};
 use std::collections::HashMap;
 
 pub struct Client<'a> {
@@ -78,6 +80,20 @@ impl<'a> Client<'a> {
         let response =
             self.http_get(&format!("exchanges/{}", self.percent_encode(virtual_host)))?;
         response.json::<Vec<responses::ExchangeInfo>>()
+    }
+
+    pub fn list_bindings(&self) -> responses::Result<Vec<responses::BindingInfo>> {
+        let response = self.http_get("bindings")?;
+        response.json::<Vec<responses::BindingInfo>>()
+    }
+
+    pub fn list_bindings_in(
+        &self,
+        virtual_host: &str,
+        ) -> responses::Result<Vec<responses::BindingInfo>> {
+        let response =
+            self.http_get(&format!("bindings/{}", self.percent_encode(virtual_host)))?;
+        response.json::<Vec<responses::BindingInfo>>()
     }
 
     pub fn list_consumers(&self) -> responses::Result<Vec<responses::Consumer>> {
@@ -176,6 +192,32 @@ impl<'a> Client<'a> {
             ),
             params,
         )?;
+        Ok(())
+    }
+
+    pub fn bind_queue(
+        &self,
+        virtual_host: &str,
+        queue: &str,
+        exchange: &str,
+        routing_key: Option<&str>,
+        arguments: XArguments,
+    ) -> responses::Result<()> {
+        let mut body = Map::<String, Value>::new();
+        if let Some(rk) = routing_key {
+            body.insert("routing_key".to_owned(), json!(rk));
+        }
+        if let Some(args) = arguments {
+            body.insert("arguments".to_owned(), json!(args));
+        }
+
+        let path = format!(
+            "bindings/{}/e/{}/q/{}",
+            self.percent_encode(virtual_host),
+            self.percent_encode(exchange),
+            self.percent_encode(queue)
+        );
+        self.http_post(&path, &body)?;
         Ok(())
     }
 
@@ -333,6 +375,17 @@ impl<'a> Client<'a> {
     {
         HttpClient::new()
             .put(self.rooted_path(path))
+            .json(&payload)
+            .basic_auth(self.username, self.password)
+            .send()
+    }
+
+    fn http_post<T>(&self, path: &str, payload: &T) -> reqwest::Result<reqwest::blocking::Response>
+    where
+        T: Serialize,
+    {
+        HttpClient::new()
+            .post(self.rooted_path(path))
             .json(&payload)
             .basic_auth(self.username, self.password)
             .send()
