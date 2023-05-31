@@ -221,20 +221,41 @@ impl<'a> Client<'a> {
         response.json::<Vec<responses::RuntimeParameter>>()
     }
 
-    pub fn list_runtime_parameters_of_component(&self, component: &str) -> responses::Result<Vec<responses::RuntimeParameter>> {
+    pub fn list_runtime_parameters_of_component(
+        &self,
+        component: &str,
+    ) -> responses::Result<Vec<responses::RuntimeParameter>> {
         let path = format!("parameters/{}", self.percent_encode(component));
         let response = self.http_get(&path)?;
         response.json::<Vec<responses::RuntimeParameter>>()
     }
 
-    pub fn list_runtime_parameters_of_component_in(&self, component: &str, vhost: &str) -> responses::Result<Vec<responses::RuntimeParameter>> {
-        let path = format!("parameters/{}/{}", self.percent_encode(component), self.percent_encode(vhost));
+    pub fn list_runtime_parameters_of_component_in(
+        &self,
+        component: &str,
+        vhost: &str,
+    ) -> responses::Result<Vec<responses::RuntimeParameter>> {
+        let path = format!(
+            "parameters/{}/{}",
+            self.percent_encode(component),
+            self.percent_encode(vhost)
+        );
         let response = self.http_get(&path)?;
         response.json::<Vec<responses::RuntimeParameter>>()
     }
 
-    pub fn get_runtime_parameter(&self, component: &str, vhost: &str, name: &str) -> responses::Result<responses::RuntimeParameter> {
-        let path = format!("parameters/{}/{}/{}", self.percent_encode(component), self.percent_encode(vhost), self.percent_encode(name));
+    pub fn get_runtime_parameter(
+        &self,
+        component: &str,
+        vhost: &str,
+        name: &str,
+    ) -> responses::Result<responses::RuntimeParameter> {
+        let path = format!(
+            "parameters/{}/{}/{}",
+            self.percent_encode(component),
+            self.percent_encode(vhost),
+            self.percent_encode(name)
+        );
         let response = self.http_get(&path)?;
         response.json::<responses::RuntimeParameter>()
     }

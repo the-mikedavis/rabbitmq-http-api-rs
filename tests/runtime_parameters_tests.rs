@@ -17,7 +17,16 @@ fn test_upsert_runtime_parameter() {
 
     let result2 = rc.get_runtime_parameter(&rpf.component, &rpf.vhost, &rpf.name);
     assert!(result2.is_ok());
-    assert_eq!(9988, result2.unwrap().value.get("max-connections").unwrap().as_u64().unwrap());
+    assert_eq!(
+        9988,
+        result2
+            .unwrap()
+            .value
+            .get("max-connections")
+            .unwrap()
+            .as_u64()
+            .unwrap()
+    );
 
     let _ = rc.clear_runtime_parameter(&rpf.component, &rpf.vhost, &rpf.name);
 }
@@ -58,7 +67,9 @@ fn max_queue_limit(n: usize) -> Map<String, Value> {
     val
 }
 
-fn example_runtime_parameter_definition(val: &mut Map<String, Value>) -> RuntimeParameterDefinition {
+fn example_runtime_parameter_definition(
+    val: &mut Map<String, Value>,
+) -> RuntimeParameterDefinition {
     RuntimeParameterDefinition {
         vhost: "/".to_owned(),
         name: "limits".to_owned(),

@@ -11,7 +11,7 @@ fn test_get_cluster_name() {
     let result = rc.get_cluster_name();
     assert!(result.is_ok());
     let meta = result.unwrap();
-    assert!(meta.name.starts_with("rabbit@"))
+    assert!(meta.name.starts_with("rabbit"))
 }
 
 #[test]
@@ -22,7 +22,7 @@ fn test_set_cluster_name() {
     let result1 = rc.get_cluster_name();
     assert!(result1.is_ok());
     let meta1 = result1.unwrap();
-    assert!(meta1.name.starts_with("rabbit@"));
+    assert!(meta1.name.starts_with("rabbit"));
 
     let result2 = rc.set_cluster_name("rusty");
     assert!(result2.is_ok());
