@@ -1,7 +1,7 @@
 use crate::{
     requests::{
         ExchangeParams, QueueParams, RuntimeParameterDefinition, UserParams, VirtualHostParams,
-        XArguments
+        XArguments,
     },
     responses,
 };
@@ -24,9 +24,9 @@ impl<'a> Client<'a> {
         password: Option<&'a str>,
     ) -> Self {
         Self {
-            endpoint: endpoint,
-            username: username,
-            password: password,
+            endpoint,
+            username,
+            password,
         }
     }
 
@@ -90,9 +90,8 @@ impl<'a> Client<'a> {
     pub fn list_bindings_in(
         &self,
         virtual_host: &str,
-        ) -> responses::Result<Vec<responses::BindingInfo>> {
-        let response =
-            self.http_get(&format!("bindings/{}", self.percent_encode(virtual_host)))?;
+    ) -> responses::Result<Vec<responses::BindingInfo>> {
+        let response = self.http_get(&format!("bindings/{}", self.percent_encode(virtual_host)))?;
         response.json::<Vec<responses::BindingInfo>>()
     }
 
@@ -126,8 +125,8 @@ impl<'a> Client<'a> {
     ) -> responses::Result<responses::QueueInfo> {
         let response = self.http_get(&format!(
             "queues/{}/{}",
-            self.percent_encode(&virtual_host),
-            self.percent_encode(&name)
+            self.percent_encode(virtual_host),
+            self.percent_encode(name)
         ))?;
         let queue = response.json::<responses::QueueInfo>()?;
         Ok(queue)
@@ -140,8 +139,8 @@ impl<'a> Client<'a> {
     ) -> responses::Result<responses::ExchangeInfo> {
         let response = self.http_get(&format!(
             "exchanges/{}/{}",
-            self.percent_encode(&virtual_host),
-            self.percent_encode(&name)
+            self.percent_encode(virtual_host),
+            self.percent_encode(name)
         ))?;
         let exchange = response.json::<responses::ExchangeInfo>()?;
         Ok(exchange)
@@ -153,7 +152,7 @@ impl<'a> Client<'a> {
 
     pub fn update_vhost(&self, params: &VirtualHostParams) -> responses::Result<()> {
         let _ = self.http_put(
-            &format!("vhosts/{}", self.percent_encode(&params.name)),
+            &format!("vhosts/{}", self.percent_encode(params.name)),
             params,
         )?;
         Ok(())
@@ -161,7 +160,7 @@ impl<'a> Client<'a> {
 
     pub fn create_user(&self, params: &UserParams) -> responses::Result<()> {
         let _ = self.http_put(
-            &format!("users/{}", self.percent_encode(&params.name)),
+            &format!("users/{}", self.percent_encode(params.name)),
             params,
         )?;
         Ok(())
@@ -171,8 +170,8 @@ impl<'a> Client<'a> {
         let _ = self.http_put(
             &format!(
                 "queues/{}/{}",
-                self.percent_encode(&virtual_host),
-                self.percent_encode(&params.name)
+                self.percent_encode(virtual_host),
+                self.percent_encode(params.name)
             ),
             params,
         )?;
@@ -187,8 +186,8 @@ impl<'a> Client<'a> {
         let _ = self.http_put(
             &format!(
                 "exchanges/{}/{}",
-                self.percent_encode(&virtual_host),
-                self.percent_encode(&params.name)
+                self.percent_encode(virtual_host),
+                self.percent_encode(params.name)
             ),
             params,
         )?;
@@ -324,9 +323,9 @@ impl<'a> Client<'a> {
     ) -> responses::Result<()> {
         let path = format!(
             "parameters/{}/{}/{}",
-            self.percent_encode(&component),
-            self.percent_encode(&vhost),
-            self.percent_encode(&name)
+            self.percent_encode(component),
+            self.percent_encode(vhost),
+            self.percent_encode(name)
         );
         self.http_delete(&path)?;
         Ok(())

@@ -39,7 +39,7 @@ impl<'a> QueueParams<'a> {
     pub fn new_quorum_queue(name: &'a str, optional_args: XArguments) -> Self {
         let args = Self::combined_args(optional_args, QueueType::Quorum);
         Self {
-            name: name,
+            name,
             queue_type: QueueType::Quorum,
             durable: true,
             auto_delete: false,
@@ -51,7 +51,7 @@ impl<'a> QueueParams<'a> {
     pub fn new_stream(name: &'a str, optional_args: XArguments) -> Self {
         let args = Self::combined_args(optional_args, QueueType::Stream);
         Self {
-            name: name,
+            name,
             queue_type: QueueType::Stream,
             durable: true,
             auto_delete: false,
@@ -63,7 +63,7 @@ impl<'a> QueueParams<'a> {
     pub fn new_durable_classic_queue(name: &'a str, optional_args: XArguments) -> Self {
         let args = Self::combined_args(optional_args, QueueType::Classic);
         Self {
-            name: name,
+            name,
             queue_type: QueueType::Classic,
             durable: true,
             auto_delete: false,
@@ -75,7 +75,7 @@ impl<'a> QueueParams<'a> {
     pub fn new_exclusive_classic_queue(name: &'a str, optional_args: XArguments) -> Self {
         let args = Self::combined_args(optional_args, QueueType::Classic);
         Self {
-            name: name,
+            name,
             queue_type: QueueType::Classic,
             durable: false,
             auto_delete: false,
@@ -88,9 +88,8 @@ impl<'a> QueueParams<'a> {
         let mut result = Map::<String, Value>::new();
         result.insert("x-queue-type".to_owned(), Value::String(queue_type.into()));
 
-        match optional_args {
-            Some(mut val) => result.append(&mut val),
-            None => (),
+        if let Some(mut val) = optional_args {
+            result.append(&mut val)
         }
 
         Some(result)

@@ -18,9 +18,7 @@ pub fn salted_password_hash_sha256(salt: &Vec<u8>, password: &str) -> Vec<u8> {
     let digest = ctx.finish();
     let digest_vec = Vec::from(digest.as_ref());
 
-    let res = Vec::from([&salt[..], &digest_vec[..]].concat());
-
-    res
+    [&salt[..], &digest_vec[..]].concat()
 }
 
 pub fn base64_encoded_salted_password_hash_sha256(salt: &Vec<u8>, password: &str) -> String {
