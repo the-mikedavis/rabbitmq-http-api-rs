@@ -107,9 +107,9 @@ impl From<String> for QueueType {
     }
 }
 
-impl Into<String> for QueueType {
-    fn into(self) -> String {
-        match self {
+impl From<QueueType> for String {
+    fn from(value: QueueType) -> Self {
+        match value {
             QueueType::Classic => "classic".to_owned(),
             QueueType::Quorum => "quorum".to_owned(),
             QueueType::Stream => "stream".to_owned(),
@@ -144,9 +144,9 @@ impl From<String> for BindingDestinationType {
     }
 }
 
-impl Into<String> for BindingDestinationType {
-    fn into(self) -> String {
-        match self {
+impl From<BindingDestinationType> for String {
+    fn from(value: BindingDestinationType) -> Self {
+        match value {
             BindingDestinationType::Queue => "queue".to_owned(),
             BindingDestinationType::Exchange => "exchange".to_owned(),
         }
