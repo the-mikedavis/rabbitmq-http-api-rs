@@ -235,3 +235,16 @@ pub struct RuntimeParameter {
 pub struct ClusterIdentity {
     pub name: String,
 }
+
+pub type PolicyDefinition = Option<Map<String, serde_json::Value>>;
+#[derive(Debug, Deserialize, Clone)]
+#[allow(dead_code)]
+pub struct Policy {
+    pub name: String,
+    pub vhost: String,
+    pub pattern: String,
+    #[serde(rename(deserialize = "apply-to"))]
+    pub apply_to: String,
+    pub priority: i32,
+    pub definition: PolicyDefinition,
+}

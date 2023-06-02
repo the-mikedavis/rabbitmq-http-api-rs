@@ -1,7 +1,7 @@
 use crate::{
     requests::{
-        ExchangeParams, QueueParams, RuntimeParameterDefinition, UserParams, VirtualHostParams,
-        XArguments,
+        ExchangeParams, PolicyParams, QueueParams, RuntimeParameterDefinition, UserParams,
+        VirtualHostParams, XArguments,
     },
     responses,
 };
@@ -427,6 +427,42 @@ impl<'a> Client<'a> {
         map.insert("name", new_name);
 
         let _ = self.http_put("cluster-name", &map)?;
+        Ok(())
+    }
+
+    pub fn get_policy(&self, vhost: &str, name: &str) -> responses::Result<responses::Policy> {
+        let response = self.http_get(&format!(
+            "policies/{}/{}",
+            self.percent_encode(vhost),
+            self.percent_encode(name)
+        ))?;
+        let policy = response.json::<responses::Policy>()?;
+        Ok(policy)
+    }
+
+    pub fn list_policies(&self) -> responses::Result<Vec<responses::Policy>> {
+        let response = self.http_get("policies")?;
+        response.json::<Vec<responses::Policy>>()
+    }
+
+    pub fn declare_policy(&self, params: &PolicyParams) -> responses::Result<()> {
+        let _ = self.http_put(
+            &format!(
+                "policies/{}/{}",
+                self.percent_encode(params.vhost),
+                self.percent_encode(params.name)
+            ),
+            params,
+        )?;
+        Ok(())
+    }
+
+    pub fn delete_policy(&self, vhost: &str, name: &str) -> responses::Result<()> {
+        self.http_delete(&format!(
+            "policies/{}/{}",
+            self.percent_encode(vhost),
+            self.percent_encode(name)
+        ))?;
         Ok(())
     }
 
