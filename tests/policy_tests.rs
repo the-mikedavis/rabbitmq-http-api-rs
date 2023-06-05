@@ -1,4 +1,7 @@
-use rabbitmq_http_client::{blocking::Client, requests::{PolicyParams, VirtualHostParams}};
+use rabbitmq_http_client::{
+    blocking::Client,
+    requests::{PolicyParams, VirtualHostParams},
+};
 
 use serde_json::{json, Map, Value};
 mod common;
@@ -14,7 +17,7 @@ fn test_message_ttl_policy() {
         tracing: false,
         description: None,
         tags: None,
-        default_queue_type: None
+        default_queue_type: None,
     };
     let _ = rc.delete_vhost(vh_params.name);
     let result1 = rc.create_vhost(&vh_params);
@@ -51,7 +54,7 @@ fn test_dlx_policy() {
         tracing: false,
         description: None,
         tags: None,
-        default_queue_type: None
+        default_queue_type: None,
     };
     let _ = rc.delete_vhost(vh_params.name);
     let result1 = rc.create_vhost(&vh_params);
