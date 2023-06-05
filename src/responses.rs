@@ -1,4 +1,4 @@
-use crate::commons::BindingDestinationType;
+use crate::commons::{BindingDestinationType, PolicyTarget};
 use serde::Deserialize;
 use serde_aux::prelude::*;
 use serde_json::Map;
@@ -233,6 +233,7 @@ pub struct ClusterIdentity {
 }
 
 pub type PolicyDefinition = Option<Map<String, serde_json::Value>>;
+
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct Policy {
@@ -240,7 +241,7 @@ pub struct Policy {
     pub vhost: String,
     pub pattern: String,
     #[serde(rename(deserialize = "apply-to"))]
-    pub apply_to: String,
-    pub priority: i32,
+    pub apply_to: PolicyTarget,
+    pub priority: i16,
     pub definition: PolicyDefinition,
 }
