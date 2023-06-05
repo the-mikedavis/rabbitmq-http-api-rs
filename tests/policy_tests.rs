@@ -79,7 +79,6 @@ fn test_a_policy(rc: &Client, policy: &PolicyParams) {
         .is_none());
 
     let result = rc.declare_policy(&policy);
-    dbg!(&result);
     assert!(result.is_ok());
 
     // validate it was created as expected
