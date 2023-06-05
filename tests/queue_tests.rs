@@ -74,8 +74,16 @@ fn test_list_all_queues() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
 
-    let result1 = rc.list_queues();
+    let vh_name = "/";
+
+    let params = QueueParams::new_exclusive_classic_queue("", None);
+    let result1 = rc.declare_queue(vh_name, &params);
     assert!(result1.is_ok());
+
+    common::await_queue_metric_emission();
+
+    let result2 = rc.list_queues();
+    assert!(result2.is_ok());
 }
 
 #[test]
@@ -83,6 +91,14 @@ fn test_list_queues_in_a_virtual_host() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
 
-    let result1 = rc.list_queues_in("/");
+    let vh_name = "/";
+
+    let params = QueueParams::new_exclusive_classic_queue("", None);
+    let result1 = rc.declare_queue(vh_name, &params);
     assert!(result1.is_ok());
+
+    common::await_queue_metric_emission();
+
+    let result2 = rc.list_queues_in(vh_name);
+    assert!(result2.is_ok());
 }
