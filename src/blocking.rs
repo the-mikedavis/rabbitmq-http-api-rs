@@ -9,7 +9,21 @@ use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use reqwest::blocking::Client as HttpClient;
 use serde::Serialize;
 use serde_json::{json, Map, Value};
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
+
+enum BindindVertex {
+    Source,
+    Destination,
+}
+
+impl Display for BindindVertex {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Source => write!(f, "source"),
+            Self::Destination => write!(f, "destination"),
+        }
+    }
+}
 
 pub struct Client<'a> {
     endpoint: &'a str,
@@ -93,6 +107,56 @@ impl<'a> Client<'a> {
     ) -> responses::Result<Vec<responses::BindingInfo>> {
         let response = self.http_get(&format!("bindings/{}", self.percent_encode(virtual_host)))?;
         response.json::<Vec<responses::BindingInfo>>()
+    }
+
+    pub fn list_queue_bindings(
+        &self,
+        virtual_host: &str,
+        queue: &str,
+    ) -> responses::Result<Vec<responses::BindingInfo>> {
+        let response = self.http_get(&format!(
+            "queues/{}/{}/bindings",
+            self.percent_encode(virtual_host),
+            self.percent_encode(queue)
+        ))?;
+        response.json::<Vec<responses::BindingInfo>>()
+    }
+
+    pub fn list_exchange_bindings(
+        &self,
+        virtual_host: &str,
+        exchange: &str,
+    ) -> responses::Result<Vec<responses::BindingInfo>> {
+        let response = self.http_get(&format!(
+            "exchanges/{}/{}/bindings",
+            self.percent_encode(virtual_host),
+            self.percent_encode(exchange)
+        ))?;
+        response.json::<Vec<responses::BindingInfo>>()
+    }
+
+    pub fn list_exchange_bindings_with_source(
+        &self,
+        virtual_host: &str,
+        exchange: &str,
+    ) -> responses::Result<Vec<responses::BindingInfo>> {
+        self.list_exchange_bindings_with_source_or_destination(
+            virtual_host,
+            exchange,
+            BindindVertex::Source,
+        )
+    }
+
+    pub fn list_exchange_bindings_with_destination(
+        &self,
+        virtual_host: &str,
+        exchange: &str,
+    ) -> responses::Result<Vec<responses::BindingInfo>> {
+        self.list_exchange_bindings_with_source_or_destination(
+            virtual_host,
+            exchange,
+            BindindVertex::Destination,
+        )
     }
 
     pub fn list_consumers(&self) -> responses::Result<Vec<responses::Consumer>> {
@@ -356,6 +420,21 @@ impl<'a> Client<'a> {
     //
     // Implementation
     //
+
+    fn list_exchange_bindings_with_source_or_destination(
+        &self,
+        virtual_host: &str,
+        exchange: &str,
+        vertex: BindindVertex,
+    ) -> responses::Result<Vec<responses::BindingInfo>> {
+        let response = self.http_get(&format!(
+            "exchanges/{}/{}/bindings/{}",
+            self.percent_encode(virtual_host),
+            self.percent_encode(exchange),
+            vertex.to_string()
+        ))?;
+        response.json::<Vec<responses::BindingInfo>>()
+    }
 
     fn percent_encode(&self, value: &str) -> String {
         utf8_percent_encode(value, NON_ALPHANUMERIC).to_string()
