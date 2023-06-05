@@ -1,4 +1,4 @@
-use crate::commons::{ExchangeType, QueueType};
+use crate::commons::{ExchangeType, QueueType, PolicyTarget};
 use serde::Serialize;
 use serde_json::{Map, Value};
 
@@ -223,7 +223,7 @@ pub struct PolicyParams<'a> {
     pub name: &'a str,
     pub pattern: &'a str,
     #[serde(rename(serialize = "apply-to"))]
-    pub apply_to: &'a str,
+    pub apply_to: PolicyTarget,
     pub priority: i32,
     pub definition: PolicyDefinition,
 }

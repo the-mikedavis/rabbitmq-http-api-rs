@@ -152,3 +152,55 @@ impl From<BindingDestinationType> for String {
         }
     }
 }
+
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum PolicyTarget {
+    Queues,
+    ClassicQueues,
+    QuorumQueues,
+    Streams,
+    Exchanges,
+    All
+}
+
+impl From<&str> for PolicyTarget {
+    fn from(value: &str) -> Self {
+        match value {
+            "queues" => PolicyTarget::Queues,
+            "classic_queues" => PolicyTarget::ClassicQueues,
+            "quorum_queues" => PolicyTarget::QuorumQueues,
+            "streams" => PolicyTarget::Streams,
+            "exchanges" => PolicyTarget::Exchanges,
+            "all" => PolicyTarget::All,
+            _ => PolicyTarget::Queues,
+        }
+    }
+}
+
+impl From<String> for PolicyTarget {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "queues" => PolicyTarget::Queues,
+            "classic_queues" => PolicyTarget::ClassicQueues,
+            "quorum_queues" => PolicyTarget::QuorumQueues,
+            "streams" => PolicyTarget::Streams,
+            "exchanges" => PolicyTarget::Exchanges,
+            "all" => PolicyTarget::All,
+            _ => PolicyTarget::Queues,
+        }
+    }
+}
+
+impl From<PolicyTarget> for String {
+    fn from(value: PolicyTarget) -> Self {
+        match value {
+            PolicyTarget::Queues => "queues".to_owned(),
+            PolicyTarget::ClassicQueues => "classic_queues".to_owned(),
+            PolicyTarget::QuorumQueues => "quorum_queues".to_owned(),
+            PolicyTarget::Streams => "streams".to_owned(),
+            PolicyTarget::Exchanges => "exchanges".to_owned(),
+            PolicyTarget::All => "all".to_owned()
+        }
+    }
+}

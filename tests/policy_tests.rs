@@ -1,7 +1,4 @@
-use rabbitmq_http_client::{
-    blocking::Client,
-    requests::{PolicyParams, VirtualHostParams},
-};
+use rabbitmq_http_client::{blocking::Client, requests::{PolicyParams, VirtualHostParams}, commons::PolicyTarget};
 
 use serde_json::{json, Map, Value};
 mod common;
@@ -31,7 +28,7 @@ fn test_message_ttl_policy() {
         vhost: vh_params.name,
         name: "message_ttl_policy",
         pattern: ".*",
-        apply_to: "all",
+        apply_to: PolicyTarget::ClassicQueues,
         priority: 42,
         definition: policy_definition,
     };
@@ -64,7 +61,7 @@ fn test_dlx_policy() {
         vhost: vh_params.name,
         name: "dlx_policy",
         pattern: ".*",
-        apply_to: "quorum_queues",
+        apply_to: PolicyTarget::QuorumQueues,
         priority: 0,
         definition: policy_definition,
     };
@@ -78,10 +75,11 @@ fn test_a_policy(rc: &Client, policy: &PolicyParams) {
     let policies = rc.list_policies_in(policy.vhost).unwrap();
     assert!(policies
         .iter()
-        .find(|policy| policy.name == policy.name)
+        .find(|p| p.name == policy.name)
         .is_none());
 
     let result = rc.declare_policy(&policy);
+    dbg!(&result);
     assert!(result.is_ok());
 
     // validate it was created as expected
