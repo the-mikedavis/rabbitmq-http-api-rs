@@ -9,7 +9,7 @@ fn test_declare_a_quorum_queue() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
     let vhost = "/";
-    let name = "rust.tests.qq.1";
+    let name = "rust.tests.qq.182374982374";
 
     let _ = rc.delete_queue(&vhost, &name);
 
@@ -31,7 +31,7 @@ fn test_declare_a_stream() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
     let vhost = "/";
-    let name = "rust.tests.qq.1";
+    let name = "rust.tests.qq.927348926347988623";
 
     let _ = rc.delete_queue(&vhost, &name);
 
@@ -53,7 +53,7 @@ fn test_delete_queue() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
     let vhost = "/";
-    let name = "rust.tests.cq.10";
+    let name = "rust.tests.cq.982734982364982364896";
 
     let _ = rc.delete_queue(&vhost, &name);
 
@@ -76,7 +76,7 @@ fn test_list_all_queues() {
 
     let vh_name = "/";
 
-    let params = QueueParams::new_exclusive_classic_queue("", None);
+    let params = QueueParams::new_exclusive_classic_queue("rust.tests.cq.exclusive.23487866", None);
     let result1 = rc.declare_queue(vh_name, &params);
     assert!(result1.is_ok());
 
@@ -93,7 +93,7 @@ fn test_list_queues_in_a_virtual_host() {
 
     let vh_name = "/";
 
-    let params = QueueParams::new_exclusive_classic_queue("", None);
+    let params = QueueParams::new_exclusive_classic_queue("rust.tests.cq.exclusive.64692734867", None);
     let result1 = rc.declare_queue(vh_name, &params);
     assert!(result1.is_ok());
 
