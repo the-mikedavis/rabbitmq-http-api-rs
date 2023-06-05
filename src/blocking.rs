@@ -11,19 +11,23 @@ use serde::Serialize;
 use serde_json::{json, Map, Value};
 use std::{collections::HashMap, fmt::Display};
 
-enum BindindVertex {
-    Source,
-    Destination,
+use thiserror::Error;
+
+type HttpClientResponse = reqwest::blocking::Response;
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("encountered an error when performing an HTTP request")]
+    RequestError(#[from] reqwest::Error),
+    #[error("API responded with a client error: status code of {0}")]
+    ClientErrorResponse(u16, HttpClientResponse),
+    #[error("API responded with a server error: status code of {0}")]
+    ServerErrorResponse(u16, HttpClientResponse),
+    #[error("an unspecified error")]
+    Other
 }
 
-impl Display for BindindVertex {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Source => write!(f, "source"),
-            Self::Destination => write!(f, "destination"),
-        }
-    }
-}
+pub type Result<T> = std::result::Result<T, Error>;
 
 pub struct Client<'a> {
     endpoint: &'a str,
@@ -44,89 +48,101 @@ impl<'a> Client<'a> {
         }
     }
 
-    pub fn list_nodes(&self) -> responses::Result<Vec<responses::ClusterNode>> {
+    pub fn list_nodes(&self) -> Result<Vec<responses::ClusterNode>> {
         let response = self.http_get("nodes")?;
-        response.json::<Vec<responses::ClusterNode>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::ClusterNode>>())
     }
 
-    pub fn list_vhosts(&self) -> responses::Result<Vec<responses::VirtualHost>> {
+    pub fn list_vhosts(&self) -> Result<Vec<responses::VirtualHost>> {
         let response = self.http_get("vhosts")?;
-        response.json::<Vec<responses::VirtualHost>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::VirtualHost>>())
     }
 
-    pub fn list_users(&self) -> responses::Result<Vec<responses::User>> {
+    pub fn list_users(&self) -> Result<Vec<responses::User>> {
         let response = self.http_get("users")?;
-        response.json::<Vec<responses::User>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::User>>())
     }
 
-    pub fn list_connections(&self) -> responses::Result<Vec<responses::Connection>> {
+    pub fn list_connections(&self) -> Result<Vec<responses::Connection>> {
         let response = self.http_get("connections")?;
-        response.json::<Vec<responses::Connection>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::Connection>>())
     }
 
-    pub fn list_channels(&self) -> responses::Result<Vec<responses::Channel>> {
+    pub fn list_channels(&self) -> Result<Vec<responses::Channel>> {
         let response = self.http_get("channels")?;
-        response.json::<Vec<responses::Channel>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::Channel>>())
     }
 
-    pub fn list_queues(&self) -> responses::Result<Vec<responses::QueueInfo>> {
+    pub fn list_queues(&self) -> Result<Vec<responses::QueueInfo>> {
         let response = self.http_get("queues")?;
-        response.json::<Vec<responses::QueueInfo>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::QueueInfo>>())
     }
 
     pub fn list_queues_in(
         &self,
         virtual_host: &str,
-    ) -> responses::Result<Vec<responses::QueueInfo>> {
+    ) -> Result<Vec<responses::QueueInfo>> {
         let response = self.http_get(&format!("queues/{}", self.percent_encode(virtual_host)))?;
-        response.json::<Vec<responses::QueueInfo>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::QueueInfo>>())
     }
 
-    pub fn list_exchanges(&self) -> responses::Result<Vec<responses::ExchangeInfo>> {
+    pub fn list_exchanges(&self) -> Result<Vec<responses::ExchangeInfo>> {
         let response = self.http_get("exchanges")?;
-        response.json::<Vec<responses::ExchangeInfo>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::ExchangeInfo>>())
     }
 
     pub fn list_exchanges_in(
         &self,
         virtual_host: &str,
-    ) -> responses::Result<Vec<responses::ExchangeInfo>> {
+    ) -> Result<Vec<responses::ExchangeInfo>> {
         let response =
             self.http_get(&format!("exchanges/{}", self.percent_encode(virtual_host)))?;
-        response.json::<Vec<responses::ExchangeInfo>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::ExchangeInfo>>())
     }
 
-    pub fn list_bindings(&self) -> responses::Result<Vec<responses::BindingInfo>> {
+    pub fn list_bindings(&self) -> Result<Vec<responses::BindingInfo>> {
         let response = self.http_get("bindings")?;
-        response.json::<Vec<responses::BindingInfo>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::BindingInfo>>())
     }
 
     pub fn list_bindings_in(
         &self,
         virtual_host: &str,
-    ) -> responses::Result<Vec<responses::BindingInfo>> {
+    ) -> Result<Vec<responses::BindingInfo>> {
         let response = self.http_get(&format!("bindings/{}", self.percent_encode(virtual_host)))?;
-        response.json::<Vec<responses::BindingInfo>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::BindingInfo>>())
     }
 
     pub fn list_queue_bindings(
         &self,
         virtual_host: &str,
         queue: &str,
-    ) -> responses::Result<Vec<responses::BindingInfo>> {
+    ) -> Result<Vec<responses::BindingInfo>> {
         let response = self.http_get(&format!(
             "queues/{}/{}/bindings",
             self.percent_encode(virtual_host),
             self.percent_encode(queue)
         ))?;
-        response.json::<Vec<responses::BindingInfo>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::BindingInfo>>())
     }
 
     pub fn list_exchange_bindings_with_source(
         &self,
         virtual_host: &str,
         exchange: &str,
-    ) -> responses::Result<Vec<responses::BindingInfo>> {
+    ) -> Result<Vec<responses::BindingInfo>> {
         self.list_exchange_bindings_with_source_or_destination(
             virtual_host,
             exchange,
@@ -138,7 +154,7 @@ impl<'a> Client<'a> {
         &self,
         virtual_host: &str,
         exchange: &str,
-    ) -> responses::Result<Vec<responses::BindingInfo>> {
+    ) -> Result<Vec<responses::BindingInfo>> {
         self.list_exchange_bindings_with_source_or_destination(
             virtual_host,
             exchange,
@@ -146,79 +162,82 @@ impl<'a> Client<'a> {
         )
     }
 
-    pub fn list_consumers(&self) -> responses::Result<Vec<responses::Consumer>> {
+    pub fn list_consumers(&self) -> Result<Vec<responses::Consumer>> {
         let response = self.http_get("consumers")?;
-        response.json::<Vec<responses::Consumer>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::Consumer>>())
     }
 
-    pub fn get_node_info(&self, name: &str) -> responses::Result<responses::ClusterNode> {
+    pub fn get_node_info(&self, name: &str) -> Result<responses::ClusterNode> {
         let response = self.http_get(&format!("nodes/{}", name))?;
-        let node = response.json::<responses::ClusterNode>()?;
-        Ok(node)
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<responses::ClusterNode>())
     }
 
-    pub fn get_vhost(&self, name: &str) -> responses::Result<responses::VirtualHost> {
+    pub fn get_vhost(&self, name: &str) -> Result<responses::VirtualHost> {
         let response = self.http_get(&format!("vhosts/{}", self.percent_encode(name)))?;
-        let node = response.json::<responses::VirtualHost>()?;
-        Ok(node)
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<responses::VirtualHost>())
     }
 
-    pub fn get_user(&self, name: &str) -> responses::Result<responses::User> {
+    pub fn get_user(&self, name: &str) -> Result<responses::User> {
         let response = self.http_get(&format!("users/{}", self.percent_encode(name)))?;
-        let node = response.json::<responses::User>()?;
-        Ok(node)
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<responses::User>())
     }
 
     pub fn get_queue_info(
         &self,
         virtual_host: &str,
         name: &str,
-    ) -> responses::Result<responses::QueueInfo> {
+    ) -> Result<responses::QueueInfo> {
         let response = self.http_get(&format!(
             "queues/{}/{}",
             self.percent_encode(virtual_host),
             self.percent_encode(name)
         ))?;
-        let queue = response.json::<responses::QueueInfo>()?;
-        Ok(queue)
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<responses::QueueInfo>())
     }
 
     pub fn get_exchange_info(
         &self,
         virtual_host: &str,
         name: &str,
-    ) -> responses::Result<responses::ExchangeInfo> {
+    ) -> Result<responses::ExchangeInfo> {
         let response = self.http_get(&format!(
             "exchanges/{}/{}",
             self.percent_encode(virtual_host),
             self.percent_encode(name)
         ))?;
-        let exchange = response.json::<responses::ExchangeInfo>()?;
-        Ok(exchange)
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<responses::ExchangeInfo>())
     }
 
-    pub fn create_vhost(&self, params: &VirtualHostParams) -> responses::Result<()> {
+    pub fn create_vhost(&self, params: &VirtualHostParams) -> Result<()> {
         self.update_vhost(params)
     }
 
-    pub fn update_vhost(&self, params: &VirtualHostParams) -> responses::Result<()> {
-        let _ = self.http_put(
+    pub fn update_vhost(&self, params: &VirtualHostParams) -> Result<()> {
+        let response = self.http_put(
             &format!("vhosts/{}", self.percent_encode(params.name)),
             params,
         )?;
+        self.ok_or_status_code_error(response)?;
         Ok(())
     }
 
-    pub fn create_user(&self, params: &UserParams) -> responses::Result<()> {
-        let _ = self.http_put(
+    pub fn create_user(&self, params: &UserParams) -> Result<()> {
+        let response = self.http_put(
             &format!("users/{}", self.percent_encode(params.name)),
             params,
         )?;
+        self.ok_or_status_code_error(response)?;
         Ok(())
     }
 
-    pub fn declare_queue(&self, virtual_host: &str, params: &QueueParams) -> responses::Result<()> {
-        let _ = self.http_put(
+    pub fn declare_queue(&self, virtual_host: &str, params: &QueueParams) -> Result<()> {
+        let response = self.http_put(
             &format!(
                 "queues/{}/{}",
                 self.percent_encode(virtual_host),
@@ -226,6 +245,7 @@ impl<'a> Client<'a> {
             ),
             params,
         )?;
+        self.ok_or_status_code_error(response)?;
         Ok(())
     }
 
@@ -233,8 +253,8 @@ impl<'a> Client<'a> {
         &self,
         virtual_host: &str,
         params: &ExchangeParams,
-    ) -> responses::Result<()> {
-        let _ = self.http_put(
+    ) -> Result<()> {
+        let response = self.http_put(
             &format!(
                 "exchanges/{}/{}",
                 self.percent_encode(virtual_host),
@@ -242,6 +262,7 @@ impl<'a> Client<'a> {
             ),
             params,
         )?;
+        self.ok_or_status_code_error(response)?;
         Ok(())
     }
 
@@ -252,7 +273,7 @@ impl<'a> Client<'a> {
         exchange: &str,
         routing_key: Option<&str>,
         arguments: XArguments,
-    ) -> responses::Result<()> {
+    ) -> Result<()> {
         let mut body = Map::<String, Value>::new();
         if let Some(rk) = routing_key {
             body.insert("routing_key".to_owned(), json!(rk));
@@ -267,7 +288,8 @@ impl<'a> Client<'a> {
             self.percent_encode(exchange),
             self.percent_encode(queue)
         );
-        self.http_post(&path, &body)?;
+        let response = self.http_post(&path, &body)?;
+        self.ok_or_status_code_error(response)?;
         Ok(())
     }
 
@@ -278,7 +300,7 @@ impl<'a> Client<'a> {
         source: &str,
         routing_key: Option<&str>,
         arguments: XArguments,
-    ) -> responses::Result<()> {
+    ) -> Result<()> {
         let mut body = Map::<String, Value>::new();
         if let Some(rk) = routing_key {
             body.insert("routing_key".to_owned(), json!(rk));
@@ -293,73 +315,82 @@ impl<'a> Client<'a> {
             self.percent_encode(source),
             self.percent_encode(destination)
         );
-        self.http_post(&path, &body)?;
+        let response = self.http_post(&path, &body)?;
+        self.ok_or_status_code_error(response)?;
         Ok(())
     }
 
-    pub fn delete_vhost(&self, virtual_host: &str) -> responses::Result<()> {
-        self.http_delete(&format!("vhosts/{}", self.percent_encode(virtual_host)))?;
+    pub fn delete_vhost(&self, virtual_host: &str) -> Result<()> {
+        let response = self.http_delete(&format!("vhosts/{}", self.percent_encode(virtual_host)))?;
+        self.ok_or_status_code_error(response)?;
         Ok(())
     }
 
-    pub fn delete_user(&self, username: &str) -> responses::Result<()> {
-        self.http_delete(&format!("users/{}", self.percent_encode(username)))?;
+    pub fn delete_user(&self, username: &str) -> Result<()> {
+        let response = self.http_delete(&format!("users/{}", self.percent_encode(username)))?;
+        self.ok_or_status_code_error(response)?;
         Ok(())
     }
 
-    pub fn delete_queue(&self, virtual_host: &str, name: &str) -> responses::Result<()> {
-        self.http_delete(&format!(
+    pub fn delete_queue(&self, virtual_host: &str, name: &str) -> Result<()> {
+        let response = self.http_delete(&format!(
             "queues/{}/{}",
             self.percent_encode(virtual_host),
             self.percent_encode(name)
         ))?;
+        self.ok_or_status_code_error(response)?;
         Ok(())
     }
 
-    pub fn delete_exchange(&self, virtual_host: &str, name: &str) -> responses::Result<()> {
-        self.http_delete(&format!(
+    pub fn delete_exchange(&self, virtual_host: &str, name: &str) -> Result<()> {
+        let response = self.http_delete(&format!(
             "exchanges/{}/{}",
             self.percent_encode(virtual_host),
             self.percent_encode(name)
         ))?;
+        self.ok_or_status_code_error(response)?;
         Ok(())
     }
 
-    pub fn purge_queue(&self, virtual_host: &str, name: &str) -> responses::Result<()> {
-        self.http_delete(&format!(
+    pub fn purge_queue(&self, virtual_host: &str, name: &str) -> Result<()> {
+        let response = self.http_delete(&format!(
             "queues/{}/{}/contents",
             self.percent_encode(virtual_host),
             self.percent_encode(name)
         ))?;
+        self.ok_or_status_code_error(response)?;
         Ok(())
     }
 
-    pub fn list_runtime_parameters(&self) -> responses::Result<Vec<responses::RuntimeParameter>> {
+    pub fn list_runtime_parameters(&self) -> Result<Vec<responses::RuntimeParameter>> {
         let response = self.http_get("parameters")?;
-        response.json::<Vec<responses::RuntimeParameter>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::RuntimeParameter>>())
     }
 
     pub fn list_runtime_parameters_of_component(
         &self,
         component: &str,
-    ) -> responses::Result<Vec<responses::RuntimeParameter>> {
+    ) -> Result<Vec<responses::RuntimeParameter>> {
         let path = format!("parameters/{}", self.percent_encode(component));
         let response = self.http_get(&path)?;
-        response.json::<Vec<responses::RuntimeParameter>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::RuntimeParameter>>())
     }
 
     pub fn list_runtime_parameters_of_component_in(
         &self,
         component: &str,
         vhost: &str,
-    ) -> responses::Result<Vec<responses::RuntimeParameter>> {
+    ) -> Result<Vec<responses::RuntimeParameter>> {
         let path = format!(
             "parameters/{}/{}",
             self.percent_encode(component),
             self.percent_encode(vhost)
         );
         let response = self.http_get(&path)?;
-        response.json::<Vec<responses::RuntimeParameter>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::RuntimeParameter>>())
     }
 
     pub fn get_runtime_parameter(
@@ -367,7 +398,7 @@ impl<'a> Client<'a> {
         component: &str,
         vhost: &str,
         name: &str,
-    ) -> responses::Result<responses::RuntimeParameter> {
+    ) -> Result<responses::RuntimeParameter> {
         let path = format!(
             "parameters/{}/{}/{}",
             self.percent_encode(component),
@@ -375,20 +406,22 @@ impl<'a> Client<'a> {
             self.percent_encode(name)
         );
         let response = self.http_get(&path)?;
-        response.json::<responses::RuntimeParameter>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<responses::RuntimeParameter>())
     }
 
     pub fn upsert_runtime_parameter(
         &self,
         param: &RuntimeParameterDefinition,
-    ) -> responses::Result<()> {
+    ) -> Result<()> {
         let path = format!(
             "parameters/{}/{}/{}",
             self.percent_encode(&param.component),
             self.percent_encode(&param.vhost),
             self.percent_encode(&param.name)
         );
-        self.http_put(&path, &param)?;
+        let response = self.http_put(&path, &param)?;
+        self.ok_or_status_code_error(response)?;
         Ok(())
     }
 
@@ -397,18 +430,19 @@ impl<'a> Client<'a> {
         component: &str,
         vhost: &str,
         name: &str,
-    ) -> responses::Result<()> {
+    ) -> Result<()> {
         let path = format!(
             "parameters/{}/{}/{}",
             self.percent_encode(component),
             self.percent_encode(vhost),
             self.percent_encode(name)
         );
-        self.http_delete(&path)?;
+        let response = self.http_delete(&path)?;
+        self.ok_or_status_code_error(response)?;
         Ok(())
     }
 
-    pub fn clear_all_runtime_parameters(&self) -> responses::Result<()> {
+    pub fn clear_all_runtime_parameters(&self) -> Result<()> {
         let params = self.list_runtime_parameters()?;
         for rp in params {
             self.clear_runtime_parameter(&rp.component, &rp.vhost, &rp.name)?
@@ -416,17 +450,18 @@ impl<'a> Client<'a> {
         Ok(())
     }
 
-    pub fn get_cluster_name(&self) -> responses::Result<responses::ClusterIdentity> {
+    pub fn get_cluster_name(&self) -> Result<responses::ClusterIdentity> {
         let response = self.http_get("cluster-name")?;
-        let id = response.json::<responses::ClusterIdentity>()?;
-        Ok(id)
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<responses::ClusterIdentity>())
     }
 
-    pub fn set_cluster_name(&self, new_name: &str) -> responses::Result<()> {
+    pub fn set_cluster_name(&self, new_name: &str) -> Result<()> {
         let mut map = HashMap::new();
         map.insert("name", new_name);
 
-        let _ = self.http_put("cluster-name", &map)?;
+        let response = self.http_put("cluster-name", &map)?;
+        self.ok_or_status_code_error(response)?;
         Ok(())
     }
 
@@ -475,57 +510,106 @@ impl<'a> Client<'a> {
         virtual_host: &str,
         exchange: &str,
         vertex: BindindVertex,
-    ) -> responses::Result<Vec<responses::BindingInfo>> {
+    ) -> Result<Vec<responses::BindingInfo>> {
         let response = self.http_get(&format!(
             "exchanges/{}/{}/bindings/{}",
             self.percent_encode(virtual_host),
             self.percent_encode(exchange),
             vertex.to_string()
         ))?;
-        response.json::<Vec<responses::BindingInfo>>()
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::BindingInfo>>())
     }
 
     fn percent_encode(&self, value: &str) -> String {
         utf8_percent_encode(value, NON_ALPHANUMERIC).to_string()
     }
 
-    fn http_get(&self, path: &str) -> reqwest::Result<reqwest::blocking::Response> {
-        HttpClient::new()
+    fn http_get(&self, path: &str) -> crate::blocking::Result<HttpClientResponse> {
+        let response = HttpClient::new()
             .get(self.rooted_path(path))
             .basic_auth(self.username, self.password)
-            .send()
+            .send();
+
+        self.ok_or_http_client_error(response)
     }
 
-    fn http_put<T>(&self, path: &str, payload: &T) -> reqwest::Result<reqwest::blocking::Response>
+    fn http_put<T>(&self, path: &str, payload: &T) -> crate::blocking::Result<HttpClientResponse>
     where
         T: Serialize,
     {
-        HttpClient::new()
+        let response = HttpClient::new()
             .put(self.rooted_path(path))
             .json(&payload)
             .basic_auth(self.username, self.password)
-            .send()
+            .send();
+
+        self.ok_or_http_client_error(response)
     }
 
-    fn http_post<T>(&self, path: &str, payload: &T) -> reqwest::Result<reqwest::blocking::Response>
+    fn http_post<T>(&self, path: &str, payload: &T) -> crate::blocking::Result<HttpClientResponse>
     where
         T: Serialize,
     {
-        HttpClient::new()
+        let response = HttpClient::new()
             .post(self.rooted_path(path))
             .json(&payload)
             .basic_auth(self.username, self.password)
-            .send()
+            .send();
+
+        self.ok_or_http_client_error(response)
     }
 
-    fn http_delete(&self, path: &str) -> reqwest::Result<reqwest::blocking::Response> {
-        HttpClient::new()
+    fn http_delete(&self, path: &str) -> crate::blocking::Result<HttpClientResponse> {
+        let response = HttpClient::new()
             .delete(self.rooted_path(path))
             .basic_auth(self.username, self.password)
-            .send()
+            .send();
+        self.ok_or_http_client_error(response)
+    }
+
+    fn ok_or_http_client_error(&self, result: reqwest::Result<HttpClientResponse>) -> Result<HttpClientResponse> {
+        match result {
+            Ok(val) => Ok(val),
+            Err(e) => Err(Error::from(e))
+        }
+    }
+
+    fn ok_or_status_code_error(&self, response: HttpClientResponse) -> Result<HttpClientResponse> {
+        let status = response.status();
+        if status.is_client_error() {
+            return Err(Error::ClientErrorResponse(status.as_u16(), response));
+        }
+
+        if status.is_server_error() {
+            return Err(Error::ServerErrorResponse(status.as_u16(), response));
+        }
+
+        Ok(response)
+    }
+
+    fn ok_or_json_parser_error<T>(&self, result: reqwest::Result<T>) -> Result<T> {
+        match result {
+            Ok(val) => Ok(val),
+            Err(e) => Err(Error::from(e))
+        }
     }
 
     fn rooted_path(&self, path: &str) -> String {
         format!("{}/{}", self.endpoint, path)
+    }
+}
+
+enum BindindVertex {
+    Source,
+    Destination,
+}
+
+impl Display for BindindVertex {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Source => write!(f, "source"),
+            Self::Destination => write!(f, "destination"),
+        }
     }
 }

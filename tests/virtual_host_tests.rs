@@ -112,7 +112,6 @@ fn test_delete_vhost() {
     assert!(result1.is_ok());
 
     let result2 = rc.get_vhost(name);
-    dbg!(&result2);
     assert!(result2.is_ok());
 
     let _ = rc.delete_vhost(&name);

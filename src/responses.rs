@@ -1,11 +1,7 @@
 use crate::commons::BindingDestinationType;
-use reqwest;
 use serde::Deserialize;
 use serde_aux::prelude::*;
 use serde_json::Map;
-
-pub type Error = reqwest::Error;
-pub type Result<T> = std::result::Result<T, reqwest::Error>;
 
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
