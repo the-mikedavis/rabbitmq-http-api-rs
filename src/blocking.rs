@@ -1,7 +1,7 @@
 use crate::{
     requests::{
-        ExchangeParams, QueueParams, RuntimeParameterDefinition, UserParams, VirtualHostParams,
-        XArguments,
+        ExchangeParams, PolicyParams, QueueParams, RuntimeParameterDefinition, UserParams,
+        VirtualHostParams, XArguments,
     },
     responses,
 };
@@ -461,6 +461,51 @@ impl<'a> Client<'a> {
         map.insert("name", new_name);
 
         let response = self.http_put("cluster-name", &map)?;
+        self.ok_or_status_code_error(response)?;
+        Ok(())
+    }
+
+    pub fn get_policy(&self, vhost: &str, name: &str) -> Result<responses::Policy> {
+        let response = self.http_get(&format!(
+            "policies/{}/{}",
+            self.percent_encode(vhost),
+            self.percent_encode(name)
+        ))?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<responses::Policy>())
+    }
+
+    pub fn list_policies(&self) -> Result<Vec<responses::Policy>> {
+        let response = self.http_get("policies")?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::Policy>>())
+    }
+
+    pub fn list_policies_in(&self, vhost: &str) -> Result<Vec<responses::Policy>> {
+        let response = self.http_get(&format!("policies/{}", self.percent_encode(vhost)))?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        self.ok_or_json_parser_error(response2.json::<Vec<responses::Policy>>())
+    }
+
+    pub fn declare_policy(&self, params: &PolicyParams) -> Result<()> {
+        let response = self.http_put(
+            &format!(
+                "policies/{}/{}",
+                self.percent_encode(params.vhost),
+                self.percent_encode(params.name)
+            ),
+            params,
+        )?;
+        self.ok_or_status_code_error(response)?;
+        Ok(())
+    }
+
+    pub fn delete_policy(&self, vhost: &str, name: &str) -> Result<()> {
+        let response = self.http_delete(&format!(
+            "policies/{}/{}",
+            self.percent_encode(vhost),
+            self.percent_encode(name)
+        ))?;
         self.ok_or_status_code_error(response)?;
         Ok(())
     }

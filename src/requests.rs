@@ -214,3 +214,16 @@ pub struct RuntimeParameterDefinition {
     pub component: String,
     pub value: RuntimeParameterValue,
 }
+
+pub type PolicyDefinition = Option<Map<String, Value>>;
+
+#[derive(Serialize)]
+pub struct PolicyParams<'a> {
+    pub vhost: &'a str,
+    pub name: &'a str,
+    pub pattern: &'a str,
+    #[serde(rename(serialize = "apply-to"))]
+    pub apply_to: &'a str,
+    pub priority: i32,
+    pub definition: PolicyDefinition,
+}
