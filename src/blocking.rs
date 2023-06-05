@@ -122,19 +122,6 @@ impl<'a> Client<'a> {
         response.json::<Vec<responses::BindingInfo>>()
     }
 
-    pub fn list_exchange_bindings(
-        &self,
-        virtual_host: &str,
-        exchange: &str,
-    ) -> responses::Result<Vec<responses::BindingInfo>> {
-        let response = self.http_get(&format!(
-            "exchanges/{}/{}/bindings",
-            self.percent_encode(virtual_host),
-            self.percent_encode(exchange)
-        ))?;
-        response.json::<Vec<responses::BindingInfo>>()
-    }
-
     pub fn list_exchange_bindings_with_source(
         &self,
         virtual_host: &str,
@@ -279,6 +266,32 @@ impl<'a> Client<'a> {
             self.percent_encode(virtual_host),
             self.percent_encode(exchange),
             self.percent_encode(queue)
+        );
+        self.http_post(&path, &body)?;
+        Ok(())
+    }
+
+    pub fn bind_exchange(
+        &self,
+        virtual_host: &str,
+        destination: &str,
+        source: &str,
+        routing_key: Option<&str>,
+        arguments: XArguments,
+    ) -> responses::Result<()> {
+        let mut body = Map::<String, Value>::new();
+        if let Some(rk) = routing_key {
+            body.insert("routing_key".to_owned(), json!(rk));
+        }
+        if let Some(args) = arguments {
+            body.insert("arguments".to_owned(), json!(args));
+        }
+
+        let path = format!(
+            "bindings/{}/e/{}/e/{}",
+            self.percent_encode(virtual_host),
+            self.percent_encode(source),
+            self.percent_encode(destination)
         );
         self.http_post(&path, &body)?;
         Ok(())

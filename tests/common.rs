@@ -12,3 +12,8 @@ pub fn endpoint() -> String {
 pub fn await_metric_emission(ms: u64) {
     std::thread::sleep(Duration::from_millis(ms));
 }
+
+#[allow(dead_code)]
+pub fn await_queue_metric_emission() {
+    await_metric_emission(500);
+}

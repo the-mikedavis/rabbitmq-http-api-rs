@@ -117,7 +117,7 @@ impl From<QueueType> for String {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum BindingDestinationType {
     Queue,
