@@ -93,7 +93,8 @@ fn test_list_queues_in_a_virtual_host() {
 
     let vh_name = "/";
 
-    let params = QueueParams::new_exclusive_classic_queue("rust.tests.cq.exclusive.64692734867", None);
+    let params =
+        QueueParams::new_exclusive_classic_queue("rust.tests.cq.exclusive.64692734867", None);
     let result1 = rc.declare_queue(vh_name, &params);
     assert!(result1.is_ok());
 

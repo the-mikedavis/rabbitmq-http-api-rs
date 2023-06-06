@@ -1,5 +1,5 @@
-use rabbitmq_http_client::{blocking::Client, requests::VirtualHostParams};
 use rabbitmq_http_client::requests::RuntimeParameterDefinition;
+use rabbitmq_http_client::{blocking::Client, requests::VirtualHostParams};
 use serde_json::{json, Map, Value};
 
 mod common;
@@ -15,7 +15,7 @@ fn test_upsert_runtime_parameter() {
         tracing: false,
         description: None,
         tags: None,
-        default_queue_type: None
+        default_queue_type: None,
     };
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
@@ -52,7 +52,7 @@ fn test_clear_runtime_parameter() {
         tracing: false,
         description: None,
         tags: None,
-        default_queue_type: None
+        default_queue_type: None,
     };
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());

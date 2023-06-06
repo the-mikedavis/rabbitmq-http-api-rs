@@ -24,7 +24,7 @@ pub enum Error {
     #[error("API responded with a server error: status code of {0}")]
     ServerErrorResponse(u16, HttpClientResponse),
     #[error("an unspecified error")]
-    Other
+    Other,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -51,28 +51,39 @@ impl<'a> Client<'a> {
     pub fn list_nodes(&self) -> Result<Vec<responses::ClusterNode>> {
         let response = self.http_get("nodes")?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::ClusterNode>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::ClusterNode>>()
+            .map_err(Error::from)
     }
 
     pub fn list_vhosts(&self) -> Result<Vec<responses::VirtualHost>> {
         let response = self.http_get("vhosts")?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::VirtualHost>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::VirtualHost>>()
+            .map_err(Error::from)
     }
 
     pub fn list_users(&self) -> Result<Vec<responses::User>> {
         let response = self.http_get("users")?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::User>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::User>>()
+            .map_err(Error::from)
     }
 
     pub fn list_connections(&self) -> Result<Vec<responses::Connection>> {
         let response = self.http_get("connections")?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::Connection>>()
+        response2
+            .json::<Vec<responses::Connection>>()
+            .map_err(Error::from)
+    }
+
+    pub fn list_user_connections(&self, username: &str) -> Result<Vec<responses::UserConnection>> {
+        let response = self.http_get(&format!("connections/username/{}", self.percent_encode(username)))?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2.json::<Vec<responses::UserConnection>>()
             .map_err(|e| Error::from(e))
     }
 
@@ -86,60 +97,58 @@ impl<'a> Client<'a> {
     pub fn list_channels(&self) -> Result<Vec<responses::Channel>> {
         let response = self.http_get("channels")?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::Channel>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::Channel>>()
+            .map_err(Error::from)
     }
 
     pub fn list_queues(&self) -> Result<Vec<responses::QueueInfo>> {
         let response = self.http_get("queues")?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::QueueInfo>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::QueueInfo>>()
+            .map_err(Error::from)
     }
 
-    pub fn list_queues_in(
-        &self,
-        virtual_host: &str,
-    ) -> Result<Vec<responses::QueueInfo>> {
+    pub fn list_queues_in(&self, virtual_host: &str) -> Result<Vec<responses::QueueInfo>> {
         let response = self.http_get(&format!("queues/{}", self.percent_encode(virtual_host)))?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::QueueInfo>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::QueueInfo>>()
+            .map_err(Error::from)
     }
 
     pub fn list_exchanges(&self) -> Result<Vec<responses::ExchangeInfo>> {
         let response = self.http_get("exchanges")?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::ExchangeInfo>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::ExchangeInfo>>()
+            .map_err(Error::from)
     }
 
-    pub fn list_exchanges_in(
-        &self,
-        virtual_host: &str,
-    ) -> Result<Vec<responses::ExchangeInfo>> {
+    pub fn list_exchanges_in(&self, virtual_host: &str) -> Result<Vec<responses::ExchangeInfo>> {
         let response =
             self.http_get(&format!("exchanges/{}", self.percent_encode(virtual_host)))?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::ExchangeInfo>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::ExchangeInfo>>()
+            .map_err(Error::from)
     }
 
     pub fn list_bindings(&self) -> Result<Vec<responses::BindingInfo>> {
         let response = self.http_get("bindings")?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::BindingInfo>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::BindingInfo>>()
+            .map_err(Error::from)
     }
 
-    pub fn list_bindings_in(
-        &self,
-        virtual_host: &str,
-    ) -> Result<Vec<responses::BindingInfo>> {
+    pub fn list_bindings_in(&self, virtual_host: &str) -> Result<Vec<responses::BindingInfo>> {
         let response = self.http_get(&format!("bindings/{}", self.percent_encode(virtual_host)))?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::BindingInfo>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::BindingInfo>>()
+            .map_err(Error::from)
     }
 
     pub fn list_queue_bindings(
@@ -153,8 +162,9 @@ impl<'a> Client<'a> {
             self.percent_encode(queue)
         ))?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::BindingInfo>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::BindingInfo>>()
+            .map_err(Error::from)
     }
 
     pub fn list_exchange_bindings_with_source(
@@ -184,44 +194,43 @@ impl<'a> Client<'a> {
     pub fn list_consumers(&self) -> Result<Vec<responses::Consumer>> {
         let response = self.http_get("consumers")?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::Consumer>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::Consumer>>()
+            .map_err(Error::from)
     }
 
     pub fn get_node_info(&self, name: &str) -> Result<responses::ClusterNode> {
         let response = self.http_get(&format!("nodes/{}", name))?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<responses::ClusterNode>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<responses::ClusterNode>()
+            .map_err(Error::from)
     }
 
     pub fn get_vhost(&self, name: &str) -> Result<responses::VirtualHost> {
         let response = self.http_get(&format!("vhosts/{}", self.percent_encode(name)))?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<responses::VirtualHost>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<responses::VirtualHost>()
+            .map_err(Error::from)
     }
 
     pub fn get_user(&self, name: &str) -> Result<responses::User> {
         let response = self.http_get(&format!("users/{}", self.percent_encode(name)))?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<responses::User>()
-            .map_err(|e| Error::from(e))
+        response2.json::<responses::User>().map_err(Error::from)
     }
 
-    pub fn get_queue_info(
-        &self,
-        virtual_host: &str,
-        name: &str,
-    ) -> Result<responses::QueueInfo> {
+    pub fn get_queue_info(&self, virtual_host: &str, name: &str) -> Result<responses::QueueInfo> {
         let response = self.http_get(&format!(
             "queues/{}/{}",
             self.percent_encode(virtual_host),
             self.percent_encode(name)
         ))?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<responses::QueueInfo>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<responses::QueueInfo>()
+            .map_err(Error::from)
     }
 
     pub fn get_exchange_info(
@@ -235,8 +244,9 @@ impl<'a> Client<'a> {
             self.percent_encode(name)
         ))?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<responses::ExchangeInfo>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<responses::ExchangeInfo>()
+            .map_err(Error::from)
     }
 
     pub fn create_vhost(&self, params: &VirtualHostParams) -> Result<()> {
@@ -274,11 +284,7 @@ impl<'a> Client<'a> {
         Ok(())
     }
 
-    pub fn declare_exchange(
-        &self,
-        virtual_host: &str,
-        params: &ExchangeParams,
-    ) -> Result<()> {
+    pub fn declare_exchange(&self, virtual_host: &str, params: &ExchangeParams) -> Result<()> {
         let response = self.http_put(
             &format!(
                 "exchanges/{}/{}",
@@ -346,7 +352,8 @@ impl<'a> Client<'a> {
     }
 
     pub fn delete_vhost(&self, virtual_host: &str) -> Result<()> {
-        let response = self.http_delete(&format!("vhosts/{}", self.percent_encode(virtual_host)))?;
+        let response =
+            self.http_delete(&format!("vhosts/{}", self.percent_encode(virtual_host)))?;
         self.ok_or_status_code_error(response)?;
         Ok(())
     }
@@ -390,8 +397,9 @@ impl<'a> Client<'a> {
     pub fn list_runtime_parameters(&self) -> Result<Vec<responses::RuntimeParameter>> {
         let response = self.http_get("parameters")?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::RuntimeParameter>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::RuntimeParameter>>()
+            .map_err(Error::from)
     }
 
     pub fn list_runtime_parameters_of_component(
@@ -401,8 +409,9 @@ impl<'a> Client<'a> {
         let path = format!("parameters/{}", self.percent_encode(component));
         let response = self.http_get(&path)?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::RuntimeParameter>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::RuntimeParameter>>()
+            .map_err(Error::from)
     }
 
     pub fn list_runtime_parameters_of_component_in(
@@ -417,8 +426,9 @@ impl<'a> Client<'a> {
         );
         let response = self.http_get(&path)?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::RuntimeParameter>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::RuntimeParameter>>()
+            .map_err(Error::from)
     }
 
     pub fn get_runtime_parameter(
@@ -435,14 +445,12 @@ impl<'a> Client<'a> {
         );
         let response = self.http_get(&path)?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<responses::RuntimeParameter>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<responses::RuntimeParameter>()
+            .map_err(Error::from)
     }
 
-    pub fn upsert_runtime_parameter(
-        &self,
-        param: &RuntimeParameterDefinition,
-    ) -> Result<()> {
+    pub fn upsert_runtime_parameter(&self, param: &RuntimeParameterDefinition) -> Result<()> {
         let path = format!(
             "parameters/{}/{}/{}",
             self.percent_encode(&param.component),
@@ -454,12 +462,7 @@ impl<'a> Client<'a> {
         Ok(())
     }
 
-    pub fn clear_runtime_parameter(
-        &self,
-        component: &str,
-        vhost: &str,
-        name: &str,
-    ) -> Result<()> {
+    pub fn clear_runtime_parameter(&self, component: &str, vhost: &str, name: &str) -> Result<()> {
         let path = format!(
             "parameters/{}/{}/{}",
             self.percent_encode(component),
@@ -482,8 +485,9 @@ impl<'a> Client<'a> {
     pub fn get_cluster_name(&self) -> Result<responses::ClusterIdentity> {
         let response = self.http_get("cluster-name")?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<responses::ClusterIdentity>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<responses::ClusterIdentity>()
+            .map_err(Error::from)
     }
 
     pub fn set_cluster_name(&self, new_name: &str) -> Result<()> {
@@ -502,22 +506,23 @@ impl<'a> Client<'a> {
             self.percent_encode(name)
         ))?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<responses::Policy>()
-            .map_err(|e| Error::from(e))
+        response2.json::<responses::Policy>().map_err(Error::from)
     }
 
     pub fn list_policies(&self) -> Result<Vec<responses::Policy>> {
         let response = self.http_get("policies")?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::Policy>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::Policy>>()
+            .map_err(Error::from)
     }
 
     pub fn list_policies_in(&self, vhost: &str) -> Result<Vec<responses::Policy>> {
         let response = self.http_get(&format!("policies/{}", self.percent_encode(vhost)))?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::Policy>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::Policy>>()
+            .map_err(Error::from)
     }
 
     pub fn declare_policy(&self, params: &PolicyParams) -> Result<()> {
@@ -557,11 +562,12 @@ impl<'a> Client<'a> {
             "exchanges/{}/{}/bindings/{}",
             self.percent_encode(virtual_host),
             self.percent_encode(exchange),
-            vertex.to_string()
+            vertex
         ))?;
         let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::BindingInfo>>()
-            .map_err(|e| Error::from(e))
+        response2
+            .json::<Vec<responses::BindingInfo>>()
+            .map_err(Error::from)
     }
 
     fn percent_encode(&self, value: &str) -> String {
@@ -611,10 +617,13 @@ impl<'a> Client<'a> {
         self.ok_or_http_client_error(response)
     }
 
-    fn ok_or_http_client_error(&self, result: reqwest::Result<HttpClientResponse>) -> Result<HttpClientResponse> {
+    fn ok_or_http_client_error(
+        &self,
+        result: reqwest::Result<HttpClientResponse>,
+    ) -> Result<HttpClientResponse> {
         match result {
             Ok(val) => Ok(val),
-            Err(e) => Err(Error::from(e))
+            Err(e) => Err(Error::from(e)),
         }
     }
 
