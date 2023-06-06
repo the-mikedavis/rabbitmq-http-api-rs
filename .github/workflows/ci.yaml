@@ -48,6 +48,7 @@ jobs:
           version: 'latest'
           ports: '15672:15672'
           plugins: 'rabbitmq_management'
+          config: ${{ github.workspace }}/.github/workflows/ci-rabbitmq.config
 
       - name: Run cargo test
         run: |
