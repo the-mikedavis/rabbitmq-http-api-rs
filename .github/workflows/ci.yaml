@@ -50,4 +50,6 @@ jobs:
           plugins: 'rabbitmq_management'
 
       - name: Run cargo test
-        run: cargo test --workspace --no-fail-fast
+        run: |
+          sleep 5
+          cargo test --workspace --no-fail-fast
