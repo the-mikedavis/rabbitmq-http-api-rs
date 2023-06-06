@@ -32,14 +32,14 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub struct Client<'a> {
     endpoint: &'a str,
     username: &'a str,
-    password: Option<&'a str>,
+    password: &'a str,
 }
 
 impl<'a> Client<'a> {
     pub fn new_with_basic_auth_credentials(
         endpoint: &'a str,
         username: &'a str,
-        password: Option<&'a str>,
+        password: &'a str,
     ) -> Self {
         Self {
             endpoint,
@@ -563,7 +563,7 @@ impl<'a> Client<'a> {
     fn http_get(&self, path: &str) -> crate::blocking::Result<HttpClientResponse> {
         let response = HttpClient::new()
             .get(self.rooted_path(path))
-            .basic_auth(self.username, self.password)
+            .basic_auth(self.username, Some(self.password))
             .send();
 
         self.ok_or_http_client_error(response)
@@ -576,7 +576,7 @@ impl<'a> Client<'a> {
         let response = HttpClient::new()
             .put(self.rooted_path(path))
             .json(&payload)
-            .basic_auth(self.username, self.password)
+            .basic_auth(self.username, Some(self.password))
             .send();
 
         self.ok_or_http_client_error(response)
@@ -589,7 +589,7 @@ impl<'a> Client<'a> {
         let response = HttpClient::new()
             .post(self.rooted_path(path))
             .json(&payload)
-            .basic_auth(self.username, self.password)
+            .basic_auth(self.username, Some(self.password))
             .send();
 
         self.ok_or_http_client_error(response)
@@ -598,7 +598,7 @@ impl<'a> Client<'a> {
     fn http_delete(&self, path: &str) -> crate::blocking::Result<HttpClientResponse> {
         let response = HttpClient::new()
             .delete(self.rooted_path(path))
-            .basic_auth(self.username, self.password)
+            .basic_auth(self.username, Some(self.password))
             .send();
         self.ok_or_http_client_error(response)
     }

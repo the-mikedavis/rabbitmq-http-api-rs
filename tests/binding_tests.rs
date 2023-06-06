@@ -10,7 +10,7 @@ use crate::common::{endpoint, PASSWORD, USERNAME};
 #[test]
 fn test_list_all_bindings() {
     let endpoint = endpoint();
-    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
+    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
     let vh_name = "/";
     let cq = "rust.cq.durable.1";
@@ -44,7 +44,7 @@ fn test_list_all_bindings() {
 #[test]
 fn test_list_only_queue_bindings() {
     let endpoint = endpoint();
-    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
+    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
     let vh_name = "/";
     let cq = "rust.cq.durable.2";
@@ -73,7 +73,7 @@ fn test_list_only_queue_bindings() {
 #[test]
 fn test_list_only_exchange_bindings() {
     let endpoint = endpoint();
-    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
+    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
     let vh_name = "/";
     let cq = "rust.cq.durable.3";
