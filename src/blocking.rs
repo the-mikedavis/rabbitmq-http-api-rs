@@ -84,14 +84,7 @@ impl<'a> Client<'a> {
         let response = self.http_get(&format!("connections/username/{}", self.percent_encode(username)))?;
         let response2 = self.ok_or_status_code_error(response)?;
         response2.json::<Vec<responses::UserConnection>>()
-            .map_err(|e| Error::from(e))
-    }
-
-    pub fn list_user_connections(&self, username: &str) -> Result<Vec<responses::UserConnection>> {
-        let response = self.http_get(&format!("connections/username/{}", self.percent_encode(username)))?;
-        let response2 = self.ok_or_status_code_error(response)?;
-        response2.json::<Vec<responses::UserConnection>>()
-            .map_err(|e| Error::from(e))
+            .map_err(Error::from)
     }
 
     pub fn list_channels(&self) -> Result<Vec<responses::Channel>> {
