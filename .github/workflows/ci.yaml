@@ -34,23 +34,26 @@ jobs:
     strategy:
       matrix:
         rust-version: [ stable ]
-      fail-fast: false
+
+    services:
+      rabbitmq:
+        image: rabbitmq:3-management
+        ports:
+          - 15672:15672
+          - 5672:5672
 
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.rust-version }}
 
-      - name: Start RabbitMQ
-        uses: mkuratczyk/rabbitmq-github-action@v1
-        with:
-          version: 'latest'
-          ports: '15672:15672'
-          plugins: 'rabbitmq_management'
-          advanced_config: ${{ github.workspace }}/.github/workflows/ci-rabbitmq.config
+      - name: Wait for node to start booting
+        run: sleep 15
+
+      - name: Configure broker
+        run: RUST_HTTP_API_CLIENT_RABBITMQCTL=DOCKER:${{job.services.rabbitmq.id}} bin/ci/before_build.sh
 
       - name: Run cargo test
-        run: |
-          sleep 5
-          cargo test --workspace --no-fail-fast
+        run: cargo test --workspace --no-fail-fast
