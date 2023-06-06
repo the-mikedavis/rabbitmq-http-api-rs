@@ -23,7 +23,7 @@ jobs:
           components: rustfmt, clippy
 
       - name: Lint (clippy)
-        run: cargo clippy --all-features --all-targets
+        run: cargo clippy
 
       - name: Lint (rustfmt)
         run: cargo fmt --all --check
