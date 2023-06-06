@@ -14,7 +14,7 @@ fn test_declare_a_quorum_queue() {
     let _ = rc.delete_queue(&vhost, &name);
 
     let result1 = rc.get_queue_info(&vhost, &name);
-    assert!(result1.is_ok(), "get_queue_info returned {:?}", result1);
+    assert!(!result1.is_ok());
 
     let mut map = Map::<String, Value>::new();
     map.insert("x-max-length".to_owned(), json!(10_000));
@@ -36,7 +36,7 @@ fn test_declare_a_stream() {
     let _ = rc.delete_queue(&vhost, &name);
 
     let result1 = rc.get_queue_info(&vhost, &name);
-    assert!(result1.is_ok(), "get_queue_info returned {:?}", result1);
+    assert!(!result1.is_ok());
 
     let mut map = Map::<String, Value>::new();
     map.insert("x-max-length-bytes".to_owned(), json!(10_000_000));
@@ -58,17 +58,15 @@ fn test_delete_queue() {
     let _ = rc.delete_queue(&vhost, &name);
 
     let result1 = rc.get_queue_info(&vhost, &name);
-    assert!(result1.is_ok(), "get_queue_info returned {:?}", result1);
+    assert!(!result1.is_ok());
 
     let params = QueueParams::new_exclusive_classic_queue(&name, None);
     let result2 = rc.declare_queue(&vhost, &params);
-    assert!(result2.is_ok());
     assert!(result2.is_ok(), "declare_queue returned {:?}", result2);
 
     let _ = rc.delete_queue(&vhost, &name);
     let result3 = rc.get_queue_info(&vhost, &name);
     assert!(!result3.is_ok());
-    assert!(result3.is_ok(), "get_queue_info returned {:?}", result3);
 }
 
 #[test]
