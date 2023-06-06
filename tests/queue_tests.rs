@@ -14,14 +14,22 @@ fn test_declare_a_quorum_queue() {
     let _ = rc.delete_queue(&vhost, &name);
 
     let result1 = rc.get_queue_info(&vhost, &name);
-    assert!(!result1.is_ok());
+    assert!(
+        result1.is_ok(),
+        "get_queue_info returned {:?}",
+        result1
+    );
 
     let mut map = Map::<String, Value>::new();
     map.insert("x-max-length".to_owned(), json!(10_000));
     let optional_args = Some(map);
     let params = QueueParams::new_quorum_queue(&name, optional_args);
     let result2 = rc.declare_queue(&vhost, &params);
-    assert!(result2.is_ok());
+    assert!(
+        result2.is_ok(),
+        "declare_queue returned {:?}",
+        result2
+    );
 
     let _ = rc.delete_queue(&vhost, &name);
 }
@@ -36,14 +44,22 @@ fn test_declare_a_stream() {
     let _ = rc.delete_queue(&vhost, &name);
 
     let result1 = rc.get_queue_info(&vhost, &name);
-    assert!(!result1.is_ok());
+    assert!(
+        result1.is_ok(),
+        "get_queue_info returned {:?}",
+        result1
+    );
 
     let mut map = Map::<String, Value>::new();
     map.insert("x-max-length-bytes".to_owned(), json!(10_000_000));
     let optional_args = Some(map);
     let params = QueueParams::new_stream(&name, optional_args);
     let result2 = rc.declare_queue(&vhost, &params);
-    assert!(result2.is_ok());
+    assert!(
+        result2.is_ok(),
+        "declare_queue returned {:?}",
+        result2
+    );
 
     let _ = rc.delete_queue(&vhost, &name);
 }
@@ -58,15 +74,29 @@ fn test_delete_queue() {
     let _ = rc.delete_queue(&vhost, &name);
 
     let result1 = rc.get_queue_info(&vhost, &name);
-    assert!(!result1.is_ok());
+    assert!(
+        result1.is_ok(),
+        "get_queue_info returned {:?}",
+        result1
+    );
 
     let params = QueueParams::new_exclusive_classic_queue(&name, None);
     let result2 = rc.declare_queue(&vhost, &params);
     assert!(result2.is_ok());
+    assert!(
+        result2.is_ok(),
+        "declare_queue returned {:?}",
+        result2
+    );
 
     let _ = rc.delete_queue(&vhost, &name);
     let result3 = rc.get_queue_info(&vhost, &name);
     assert!(!result3.is_ok());
+    assert!(
+        result3.is_ok(),
+        "get_queue_info returned {:?}",
+        result3
+    );
 }
 
 #[test]
@@ -78,12 +108,20 @@ fn test_list_all_queues() {
 
     let params = QueueParams::new_exclusive_classic_queue("rust.tests.cq.exclusive.23487866", None);
     let result1 = rc.declare_queue(vh_name, &params);
-    assert!(result1.is_ok());
+    assert!(
+        result1.is_ok(),
+        "declare_queue returned {:?}",
+        result1
+    );
 
     common::await_queue_metric_emission();
 
     let result2 = rc.list_queues();
-    assert!(result2.is_ok());
+    assert!(
+        result2.is_ok(),
+        "list_queues returned {:?}",
+        result2
+    );
 }
 
 #[test]
@@ -96,15 +134,18 @@ fn test_list_queues_in_a_virtual_host() {
     let params =
         QueueParams::new_exclusive_classic_queue("rust.tests.cq.exclusive.64692734867", None);
     let result1 = rc.declare_queue(vh_name, &params);
-    assert!(result1.is_ok());
+    assert!(
+        result1.is_ok(),
+        "declare_queue returned {:?}",
+        result1
+    );
 
     common::await_queue_metric_emission();
 
     let result2 = rc.list_queues_in(vh_name);
     assert!(
         result2.is_ok(),
-        "list_queues_in({}) returned {:?}",
-        vh_name,
+        "list_queues_in returned {:?}",
         result2
     );
 }

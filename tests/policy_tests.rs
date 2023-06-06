@@ -80,7 +80,11 @@ fn test_a_policy(rc: &Client, policy: &PolicyParams) {
     assert!(policies.iter().find(|p| p.name == policy.name).is_none());
 
     let result = rc.declare_policy(&policy);
-    assert!(result.is_ok());
+    assert!(
+        result.is_ok(),
+        "declare_policy returned {:?}",
+        result
+    );
 
     // validate it was created as expected
     let result = rc.get_policy(policy.vhost, policy.name);
