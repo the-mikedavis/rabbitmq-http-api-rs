@@ -1,4 +1,4 @@
-use crate::commons::{ExchangeType, QueueType, PolicyTarget};
+use crate::commons::{ExchangeType, PolicyTarget, QueueType};
 use serde::Serialize;
 use serde_json::{Map, Value};
 

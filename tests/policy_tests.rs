@@ -1,4 +1,8 @@
-use rabbitmq_http_client::{blocking::Client, requests::{PolicyParams, VirtualHostParams}, commons::PolicyTarget};
+use rabbitmq_http_client::{
+    blocking::Client,
+    commons::PolicyTarget,
+    requests::{PolicyParams, VirtualHostParams},
+};
 
 use serde_json::{json, Map, Value};
 mod common;
@@ -73,10 +77,7 @@ fn test_dlx_policy() {
 fn test_a_policy(rc: &Client, policy: &PolicyParams) {
     // initially, there should be no such policy
     let policies = rc.list_policies_in(policy.vhost).unwrap();
-    assert!(policies
-        .iter()
-        .find(|p| p.name == policy.name)
-        .is_none());
+    assert!(policies.iter().find(|p| p.name == policy.name).is_none());
 
     let result = rc.declare_policy(&policy);
     assert!(result.is_ok());

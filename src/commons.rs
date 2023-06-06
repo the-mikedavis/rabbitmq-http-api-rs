@@ -161,7 +161,7 @@ pub enum PolicyTarget {
     QuorumQueues,
     Streams,
     Exchanges,
-    All
+    All,
 }
 
 impl From<&str> for PolicyTarget {
@@ -200,7 +200,7 @@ impl From<PolicyTarget> for String {
             PolicyTarget::QuorumQueues => "quorum_queues".to_owned(),
             PolicyTarget::Streams => "streams".to_owned(),
             PolicyTarget::Exchanges => "exchanges".to_owned(),
-            PolicyTarget::All => "all".to_owned()
+            PolicyTarget::All => "all".to_owned(),
         }
     }
 }
