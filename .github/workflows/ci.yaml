@@ -43,12 +43,12 @@ jobs:
           toolchain: ${{ matrix.rust-version }}
 
       - name: Start RabbitMQ
-        uses: namoshek/rabbitmq-github-action@v1
+        uses: mkuratczyk/rabbitmq-github-action@v1
         with:
           version: 'latest'
           ports: '15672:15672'
           plugins: 'rabbitmq_management'
-          config: ${{ github.workspace }}/.github/workflows/ci-rabbitmq.config
+          advanced_config: ${{ github.workspace }}/.github/workflows/ci-rabbitmq.config
 
       - name: Run cargo test
         run: |
