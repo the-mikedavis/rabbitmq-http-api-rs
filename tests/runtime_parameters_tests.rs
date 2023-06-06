@@ -8,7 +8,7 @@ use crate::common::{await_metric_emission, endpoint, PASSWORD, USERNAME};
 #[test]
 fn test_upsert_runtime_parameter() {
     let endpoint = endpoint();
-    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
+    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams {
         name: "test_upsert_runtime_parameter",
@@ -45,7 +45,7 @@ fn test_upsert_runtime_parameter() {
 #[test]
 fn test_clear_runtime_parameter() {
     let endpoint = endpoint();
-    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
+    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams {
         name: "test_clear_runtime_parameter",

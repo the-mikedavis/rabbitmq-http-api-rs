@@ -7,7 +7,7 @@ use crate::common::{endpoint, PASSWORD, USERNAME};
 #[test]
 fn test_message_ttl_policy() {
     let endpoint = endpoint();
-    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
+    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
     let vh_params = VirtualHostParams {
         name: "test_message_ttl_policy",
@@ -40,7 +40,7 @@ fn test_message_ttl_policy() {
 #[test]
 fn test_dlx_policy() {
     let endpoint = endpoint();
-    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, Some(PASSWORD));
+    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
     let mut map = Map::<String, Value>::new();
     map.insert("dead-letter-exchange".to_owned(), json!("my-dlx"));
