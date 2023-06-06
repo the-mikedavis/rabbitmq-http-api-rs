@@ -101,5 +101,10 @@ fn test_list_queues_in_a_virtual_host() {
     common::await_queue_metric_emission();
 
     let result2 = rc.list_queues_in(vh_name);
-    assert!(result2.is_ok());
+    assert!(
+        result2.is_ok(),
+        "list_queues_in({}) returned {:?}",
+        vh_name,
+        result2
+    );
 }
