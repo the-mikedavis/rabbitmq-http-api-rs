@@ -80,6 +80,16 @@ pub struct ClientCapabilities {
 
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
+pub struct UserConnection {
+    pub name: String,
+    pub node: String,
+    #[serde(rename(deserialize = "user"))]
+    pub username: String,
+    pub vhost: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[allow(dead_code)]
 pub struct Channel {
     #[serde(rename(deserialize = "number"))]
     pub id: u32,
