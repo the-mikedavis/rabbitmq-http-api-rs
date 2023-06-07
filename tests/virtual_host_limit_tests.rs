@@ -24,11 +24,17 @@ fn test_list_all_vhost_limits() {
     assert!(result3.is_ok());
     let vec = result3.unwrap();
     assert!(vec.iter().find(|vh| vh.vhost == vh_params.name).is_some());
-    
+
     let key1 = EnforcedLimitTarget::MaxConnections.to_string();
-    assert!(vec.iter().find(|it| it.vhost == vh_params.name && it.limits.get(&key1).is_some()).is_none());
+    assert!(vec
+        .iter()
+        .find(|it| it.vhost == vh_params.name && it.limits.get(&key1).is_some())
+        .is_none());
     let key2 = EnforcedLimitTarget::MaxQueues.to_string();
-    assert!(vec.iter().find(|it| it.vhost == vh_params.name && it.limits.get(&key2).is_some()).is_some());
+    assert!(vec
+        .iter()
+        .find(|it| it.vhost == vh_params.name && it.limits.get(&key2).is_some())
+        .is_some());
 
     rc.delete_vhost(vh_params.name).unwrap();
 }
@@ -49,11 +55,17 @@ fn test_list_vhost_limits() {
     let result3 = rc.list_vhost_limits(vh_params.name);
     assert!(result3.is_ok());
     let vec = result3.unwrap();
-    
+
     let key1 = EnforcedLimitTarget::MaxConnections.to_string();
-    assert!(vec.iter().find(|it| it.vhost == vh_params.name && it.limits.get(&key1).is_some()).is_some());
+    assert!(vec
+        .iter()
+        .find(|it| it.vhost == vh_params.name && it.limits.get(&key1).is_some())
+        .is_some());
     let key2 = EnforcedLimitTarget::MaxQueues.to_string();
-    assert!(vec.iter().find(|it| it.vhost == vh_params.name && it.limits.get(&key2).is_some()).is_none());
+    assert!(vec
+        .iter()
+        .find(|it| it.vhost == vh_params.name && it.limits.get(&key2).is_some())
+        .is_none());
 
     rc.delete_vhost(vh_params.name).unwrap();
 }
