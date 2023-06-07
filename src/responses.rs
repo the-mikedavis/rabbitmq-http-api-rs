@@ -21,6 +21,16 @@ pub struct VirtualHost {
     pub metadata: VirtualHostMetadata,
 }
 
+pub type EnforcedLimits = Map<String, serde_json::Value>;
+
+#[derive(Debug, Deserialize, Clone)]
+#[allow(dead_code)]
+pub struct VirtualHostLimits {
+    pub vhost: String,
+    #[serde(rename(deserialize = "value"))]
+    pub limits: EnforcedLimits,
+}
+
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct User {
