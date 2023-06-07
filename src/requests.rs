@@ -17,7 +17,7 @@ pub struct VirtualHostParams<'a> {
 impl<'a> VirtualHostParams<'a> {
     pub fn named(name: &'a str) -> Self {
         VirtualHostParams {
-            name: name,
+            name,
             description: None,
             tags: None,
             default_queue_type: None,
