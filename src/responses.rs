@@ -284,3 +284,36 @@ pub struct Permissions {
     pub read: String,
     pub write: String,
 }
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+pub enum HealthCheckFailureDetails {
+    AlarmCheck(ClusterAlarmCheckDetails),
+    NodeIsQuorumCritical(QuorumCriticalityCheckDetails)
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+pub struct ClusterAlarmCheckDetails {
+    pub reason: String,
+    pub alarms: Vec<ResourceAlarm>
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+pub struct ResourceAlarm {
+    pub node: String,
+    pub resource: String
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+pub struct QuorumCriticalityCheckDetails {
+    pub reason: String,
+    pub queues: Vec<QuorumEndangeredQueue>
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+pub struct QuorumEndangeredQueue {
+    pub name: String,
+    #[serde(rename(deserialize = "virtual_host"))]
+    pub vhost: String,
+    #[serde(rename(deserialize = "type"))]
+    pub queue_type: String,
+}

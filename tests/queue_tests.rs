@@ -60,11 +60,11 @@ fn test_delete_queue() {
     let result1 = rc.get_queue_info(&vhost, &name);
     assert!(!result1.is_ok());
 
-    let params = QueueParams::new_exclusive_classic_queue(&name, None);
+    let params = QueueParams::new_durable_classic_queue(&name, None);
     let result2 = rc.declare_queue(&vhost, &params);
     assert!(result2.is_ok(), "declare_queue returned {:?}", result2);
 
-    let _ = rc.delete_queue(&vhost, &name);
+    rc.delete_queue(&vhost, &name).unwrap();
     let result3 = rc.get_queue_info(&vhost, &name);
     assert!(!result3.is_ok());
 }
@@ -76,7 +76,7 @@ fn test_list_all_queues() {
 
     let vh_name = "/";
 
-    let params = QueueParams::new_exclusive_classic_queue("rust.tests.cq.exclusive.23487866", None);
+    let params = QueueParams::new_durable_classic_queue("rust.tests.cq.23487866", None);
     let result1 = rc.declare_queue(vh_name, &params);
     assert!(result1.is_ok(), "declare_queue returned {:?}", result1);
 
@@ -84,6 +84,8 @@ fn test_list_all_queues() {
 
     let result2 = rc.list_queues();
     assert!(result2.is_ok(), "list_queues returned {:?}", result2);
+
+    rc.delete_queue(&vh_name, &params.name).unwrap();
 }
 
 #[test]
@@ -94,7 +96,7 @@ fn test_list_queues_in_a_virtual_host() {
     let vh_name = "/";
 
     let params =
-        QueueParams::new_exclusive_classic_queue("rust.tests.cq.exclusive.64692734867", None);
+        QueueParams::new_durable_classic_queue("rust.tests.cq.64692734867", None);
     let result1 = rc.declare_queue(vh_name, &params);
     assert!(result1.is_ok(), "declare_queue returned {:?}", result1);
 
@@ -102,4 +104,6 @@ fn test_list_queues_in_a_virtual_host() {
 
     let result2 = rc.list_queues_in(vh_name);
     assert!(result2.is_ok(), "list_queues_in returned {:?}", result2);
+
+    rc.delete_queue(&vh_name, &params.name).unwrap();
 }
