@@ -1,4 +1,4 @@
-use crate::commons::{EnforcedLimitTarget, ExchangeType, PolicyTarget, QueueType};
+use crate::commons::{ExchangeType, PolicyTarget, QueueType};
 use serde::Serialize;
 use serde_json::{Map, Value};
 
@@ -27,14 +27,14 @@ impl<'a> VirtualHostParams<'a> {
 }
 
 #[derive(Serialize)]
-pub struct VirtualHostLimitParams {
-    pub kind: EnforcedLimitTarget,
+pub struct EnforcedLimitParams<T> {
+    pub kind: T,
     pub value: i64,
 }
 
-impl VirtualHostLimitParams {
-    pub fn new(kind: EnforcedLimitTarget, value: i64) -> Self {
-        VirtualHostLimitParams { kind, value }
+impl<T> EnforcedLimitParams<T> {
+    pub fn new(kind: T, value: i64) -> Self {
+        EnforcedLimitParams { kind, value }
     }
 }
 

@@ -1,7 +1,7 @@
 use rabbitmq_http_client::{
     blocking::Client,
-    commons::EnforcedLimitTarget,
-    requests::{VirtualHostLimitParams, VirtualHostParams},
+    commons::VirtualHostLimitTarget,
+    requests::{EnforcedLimitParams, VirtualHostParams},
 };
 
 mod common;
@@ -16,21 +16,21 @@ fn test_list_all_vhost_limits() {
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
-    let limit = VirtualHostLimitParams::new(EnforcedLimitTarget::MaxQueues, 500);
+    let limit = EnforcedLimitParams::new(VirtualHostLimitTarget::MaxQueues, 500);
     let result2 = rc.set_vhost_limit(&vh_params.name, limit);
     assert!(result2.is_ok());
 
     let result3 = rc.list_all_vhost_limits();
     assert!(result3.is_ok());
     let vec = result3.unwrap();
-    assert!(vec.iter().find(|vh| vh.vhost == vh_params.name).is_some());
+    assert!(vec.iter().find(|it| it.vhost == vh_params.name).is_some());
 
-    let key1 = EnforcedLimitTarget::MaxConnections.to_string();
+    let key1 = VirtualHostLimitTarget::MaxConnections.to_string();
     assert!(vec
         .iter()
         .find(|it| it.vhost == vh_params.name && it.limits.get(&key1).is_some())
         .is_none());
-    let key2 = EnforcedLimitTarget::MaxQueues.to_string();
+    let key2 = VirtualHostLimitTarget::MaxQueues.to_string();
     assert!(vec
         .iter()
         .find(|it| it.vhost == vh_params.name && it.limits.get(&key2).is_some())
@@ -48,7 +48,7 @@ fn test_list_vhost_limits() {
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
-    let limit = VirtualHostLimitParams::new(EnforcedLimitTarget::MaxConnections, 500);
+    let limit = EnforcedLimitParams::new(VirtualHostLimitTarget::MaxConnections, 500);
     let result2 = rc.set_vhost_limit(&vh_params.name, limit);
     assert!(result2.is_ok());
 
@@ -56,12 +56,12 @@ fn test_list_vhost_limits() {
     assert!(result3.is_ok());
     let vec = result3.unwrap();
 
-    let key1 = EnforcedLimitTarget::MaxConnections.to_string();
+    let key1 = VirtualHostLimitTarget::MaxConnections.to_string();
     assert!(vec
         .iter()
         .find(|it| it.vhost == vh_params.name && it.limits.get(&key1).is_some())
         .is_some());
-    let key2 = EnforcedLimitTarget::MaxQueues.to_string();
+    let key2 = VirtualHostLimitTarget::MaxQueues.to_string();
     assert!(vec
         .iter()
         .find(|it| it.vhost == vh_params.name && it.limits.get(&key2).is_some())

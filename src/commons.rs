@@ -207,45 +207,90 @@ impl From<PolicyTarget> for String {
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
-pub enum EnforcedLimitTarget {
+pub enum VirtualHostLimitTarget {
     MaxConnections,
     MaxQueues,
 }
 
-impl ToString for EnforcedLimitTarget {
+impl ToString for VirtualHostLimitTarget {
     fn to_string(&self) -> String {
         match self {
-            EnforcedLimitTarget::MaxConnections => "max-connections".to_owned(),
-            EnforcedLimitTarget::MaxQueues => "max-queues".to_owned(),
+            VirtualHostLimitTarget::MaxConnections => "max-connections".to_owned(),
+            VirtualHostLimitTarget::MaxQueues => "max-queues".to_owned(),
         }
     }
 }
 
-impl From<&str> for EnforcedLimitTarget {
+impl From<&str> for VirtualHostLimitTarget {
     fn from(value: &str) -> Self {
         match value {
-            "max-connections" => EnforcedLimitTarget::MaxConnections,
-            "max-queues" => EnforcedLimitTarget::MaxQueues,
-            _ => EnforcedLimitTarget::MaxConnections,
+            "max-connections" => VirtualHostLimitTarget::MaxConnections,
+            "max-queues" => VirtualHostLimitTarget::MaxQueues,
+            _ => VirtualHostLimitTarget::MaxConnections,
         }
     }
 }
 
-impl From<String> for EnforcedLimitTarget {
+impl From<String> for VirtualHostLimitTarget {
     fn from(value: String) -> Self {
         match value.as_str() {
-            "max-connections" => EnforcedLimitTarget::MaxConnections,
-            "max-queues" => EnforcedLimitTarget::MaxQueues,
-            _ => EnforcedLimitTarget::MaxConnections,
+            "max-connections" => VirtualHostLimitTarget::MaxConnections,
+            "max-queues" => VirtualHostLimitTarget::MaxQueues,
+            _ => VirtualHostLimitTarget::MaxConnections,
         }
     }
 }
 
-impl From<EnforcedLimitTarget> for String {
-    fn from(value: EnforcedLimitTarget) -> Self {
+impl From<VirtualHostLimitTarget> for String {
+    fn from(value: VirtualHostLimitTarget) -> Self {
         match value {
-            EnforcedLimitTarget::MaxConnections => "max-connections".to_owned(),
-            EnforcedLimitTarget::MaxQueues => "max-queues".to_owned(),
+            VirtualHostLimitTarget::MaxConnections => "max-connections".to_owned(),
+            VirtualHostLimitTarget::MaxQueues => "max-queues".to_owned(),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[serde(untagged, rename_all = "kebab-case")]
+pub enum UserLimitTarget {
+    MaxConnections,
+    MaxChannels,
+}
+
+impl ToString for UserLimitTarget {
+    fn to_string(&self) -> String {
+        match self {
+            UserLimitTarget::MaxConnections => "max-connections".to_owned(),
+            UserLimitTarget::MaxChannels => "max-channels".to_owned(),
+        }
+    }
+}
+
+impl From<&str> for UserLimitTarget {
+    fn from(value: &str) -> Self {
+        match value {
+            "max-connections" => UserLimitTarget::MaxConnections,
+            "max-channels" => UserLimitTarget::MaxChannels,
+            _ => UserLimitTarget::MaxConnections,
+        }
+    }
+}
+
+impl From<String> for UserLimitTarget {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "max-connections" => UserLimitTarget::MaxConnections,
+            "max-channels" => UserLimitTarget::MaxChannels,
+            _ => UserLimitTarget::MaxConnections,
+        }
+    }
+}
+
+impl From<UserLimitTarget> for String {
+    fn from(value: UserLimitTarget) -> Self {
+        match value {
+            UserLimitTarget::MaxConnections => "max-connections".to_owned(),
+            UserLimitTarget::MaxChannels => "max-channels".to_owned(),
         }
     }
 }
