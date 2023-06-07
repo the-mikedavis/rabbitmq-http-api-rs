@@ -595,6 +595,46 @@ impl<'a> Client<'a> {
         Ok(())
     }
 
+    pub fn list_permissions(&self) -> Result<Vec<responses::Permissions>> {
+        let response = self.http_get("permissions")?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<Vec<responses::Permissions>>()
+            .map_err(Error::from)
+    }
+
+    pub fn list_permissions_in(&self, vhost: &str) -> Result<Vec<responses::Permissions>> {
+        let response = self.http_get(&format!(
+            "vhosts/{}/permissions",
+            self.percent_encode(vhost)
+        ))?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<Vec<responses::Permissions>>()
+            .map_err(Error::from)
+    }
+
+    pub fn list_permissions_of(&self, user: &str) -> Result<Vec<responses::Permissions>> {
+        let response =
+            self.http_get(&format!("users/{}/permissions", self.percent_encode(user)))?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<Vec<responses::Permissions>>()
+            .map_err(Error::from)
+    }
+
+    pub fn get_permissions(&self, vhost: &str, user: &str) -> Result<responses::Permissions> {
+        let response = self.http_get(&format!(
+            "permissions/{}/{}",
+            self.percent_encode(vhost),
+            self.percent_encode(user)
+        ))?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<responses::Permissions>()
+            .map_err(Error::from)
+    }
+
     //
     // Implementation
     //

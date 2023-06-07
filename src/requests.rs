@@ -227,3 +227,12 @@ pub struct PolicyParams<'a> {
     pub priority: i32,
     pub definition: PolicyDefinition,
 }
+
+#[derive(Serialize)]
+pub struct Permissions<'a> {
+    pub user: &'a str,
+    pub vhost: &'a str,
+    pub configure: &'a str,
+    pub read: &'a str,
+    pub write: &'a str,
+}

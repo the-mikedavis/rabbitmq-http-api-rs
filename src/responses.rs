@@ -255,3 +255,13 @@ pub struct Policy {
     pub priority: i16,
     pub definition: PolicyDefinition,
 }
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[allow(dead_code)]
+pub struct Permissions {
+    pub user: String,
+    pub vhost: String,
+    pub configure: String,
+    pub read: String,
+    pub write: String,
+}
