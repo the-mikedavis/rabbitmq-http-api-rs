@@ -288,25 +288,25 @@ pub struct Permissions {
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 pub enum HealthCheckFailureDetails {
     AlarmCheck(ClusterAlarmCheckDetails),
-    NodeIsQuorumCritical(QuorumCriticalityCheckDetails)
+    NodeIsQuorumCritical(QuorumCriticalityCheckDetails),
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 pub struct ClusterAlarmCheckDetails {
     pub reason: String,
-    pub alarms: Vec<ResourceAlarm>
+    pub alarms: Vec<ResourceAlarm>,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 pub struct ResourceAlarm {
     pub node: String,
-    pub resource: String
+    pub resource: String,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
 pub struct QuorumCriticalityCheckDetails {
     pub reason: String,
-    pub queues: Vec<QuorumEndangeredQueue>
+    pub queues: Vec<QuorumEndangeredQueue>,
 }
 
 #[derive(Debug, Deserialize, Clone, Eq, PartialEq)]

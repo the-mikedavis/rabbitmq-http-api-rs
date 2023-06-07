@@ -743,13 +743,15 @@ impl<'a> Client<'a> {
         let response2 = self.ok_or_status_code_error_except_503(response)?;
 
         if response2.status().is_success() {
-            return Ok(())
+            return Ok(());
         }
 
         let failure_details = response2
-                    .json::<responses::QuorumCriticalityCheckDetails>()
-                    .map_err(Error::from)?;
-        Err(Error::HealthCheckFailed(responses::HealthCheckFailureDetails::NodeIsQuorumCritical(failure_details)))
+            .json::<responses::QuorumCriticalityCheckDetails>()
+            .map_err(Error::from)?;
+        Err(Error::HealthCheckFailed(
+            responses::HealthCheckFailureDetails::NodeIsQuorumCritical(failure_details),
+        ))
     }
 
     //
@@ -761,13 +763,15 @@ impl<'a> Client<'a> {
         let response2 = self.ok_or_status_code_error_except_503(response)?;
 
         if response2.status().is_success() {
-            return Ok(())
+            return Ok(());
         }
 
         let failure_details = response2
-                    .json::<responses::ClusterAlarmCheckDetails>()
-                    .map_err(Error::from)?;
-        Err(Error::HealthCheckFailed(responses::HealthCheckFailureDetails::AlarmCheck(failure_details)))
+            .json::<responses::ClusterAlarmCheckDetails>()
+            .map_err(Error::from)?;
+        Err(Error::HealthCheckFailed(
+            responses::HealthCheckFailureDetails::AlarmCheck(failure_details),
+        ))
     }
 
     fn list_exchange_bindings_with_source_or_destination(
@@ -858,7 +862,10 @@ impl<'a> Client<'a> {
         Ok(response)
     }
 
-    fn ok_or_status_code_error_except_503(&self, response: HttpClientResponse) -> Result<HttpClientResponse> {
+    fn ok_or_status_code_error_except_503(
+        &self,
+        response: HttpClientResponse,
+    ) -> Result<HttpClientResponse> {
         let status = response.status();
         if status.is_client_error() {
             return Err(Error::ClientErrorResponse(status.as_u16(), response));

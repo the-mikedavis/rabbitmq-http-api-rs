@@ -95,8 +95,7 @@ fn test_list_queues_in_a_virtual_host() {
 
     let vh_name = "/";
 
-    let params =
-        QueueParams::new_durable_classic_queue("rust.tests.cq.64692734867", None);
+    let params = QueueParams::new_durable_classic_queue("rust.tests.cq.64692734867", None);
     let result1 = rc.declare_queue(vh_name, &params);
     assert!(result1.is_ok(), "declare_queue returned {:?}", result1);
 

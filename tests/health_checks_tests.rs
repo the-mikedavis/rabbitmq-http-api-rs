@@ -1,6 +1,4 @@
-use rabbitmq_http_client::{
-    blocking::Client
-};
+use rabbitmq_http_client::blocking::Client;
 
 mod common;
 use crate::common::{endpoint, PASSWORD, USERNAME};
