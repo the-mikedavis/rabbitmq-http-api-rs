@@ -1,4 +1,4 @@
-use crate::commons::{ExchangeType, PolicyTarget, QueueType};
+use crate::commons::{EnforcedLimitTarget, ExchangeType, PolicyTarget, QueueType};
 use serde::Serialize;
 use serde_json::{Map, Value};
 
@@ -12,6 +12,30 @@ pub struct VirtualHostParams<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub default_queue_type: Option<QueueType>,
     pub tracing: bool,
+}
+
+impl<'a> VirtualHostParams<'a> {
+    pub fn named(name: &'a str) -> Self {
+        VirtualHostParams {
+            name: name,
+            description: None,
+            tags: None,
+            default_queue_type: None,
+            tracing: false,
+        }
+    }
+}
+
+#[derive(Serialize)]
+pub struct VirtualHostLimitParams {
+    pub kind: EnforcedLimitTarget,
+    pub value: i64,
+}
+
+impl VirtualHostLimitParams {
+    pub fn new(kind: EnforcedLimitTarget, value: i64) -> Self {
+        VirtualHostLimitParams { kind, value }
+    }
 }
 
 #[derive(Serialize)]

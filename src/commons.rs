@@ -204,3 +204,48 @@ impl From<PolicyTarget> for String {
         }
     }
 }
+
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum EnforcedLimitTarget {
+    MaxConnections,
+    MaxQueues,
+}
+
+impl ToString for EnforcedLimitTarget {
+    fn to_string(&self) -> String {
+        match self {
+            EnforcedLimitTarget::MaxConnections => "max-connections".to_owned(),
+            EnforcedLimitTarget::MaxQueues => "max-queues".to_owned(),
+        }
+    }
+}
+
+impl From<&str> for EnforcedLimitTarget {
+    fn from(value: &str) -> Self {
+        match value {
+            "max-connections" => EnforcedLimitTarget::MaxConnections,
+            "max-queues" => EnforcedLimitTarget::MaxQueues,
+            _ => EnforcedLimitTarget::MaxConnections,
+        }
+    }
+}
+
+impl From<String> for EnforcedLimitTarget {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "max-connections" => EnforcedLimitTarget::MaxConnections,
+            "max-queues" => EnforcedLimitTarget::MaxQueues,
+            _ => EnforcedLimitTarget::MaxConnections,
+        }
+    }
+}
+
+impl From<EnforcedLimitTarget> for String {
+    fn from(value: EnforcedLimitTarget) -> Self {
+        match value {
+            EnforcedLimitTarget::MaxConnections => "max-connections".to_owned(),
+            EnforcedLimitTarget::MaxQueues => "max-queues".to_owned(),
+        }
+    }
+}

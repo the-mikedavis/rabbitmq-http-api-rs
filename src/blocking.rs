@@ -1,7 +1,8 @@
 use crate::{
+    commons::EnforcedLimitTarget,
     requests::{
         ExchangeParams, PolicyParams, QueueParams, RuntimeParameterDefinition, UserParams,
-        VirtualHostParams, XArguments,
+        VirtualHostLimitParams, VirtualHostParams, XArguments,
     },
     responses,
 };
@@ -477,6 +478,50 @@ impl<'a> Client<'a> {
             self.clear_runtime_parameter(&rp.component, &rp.vhost, &rp.name)?
         }
         Ok(())
+    }
+
+    pub fn clear_all_runtime_parameters_of_component(&self, component: &str) -> Result<()> {
+        let params = self.list_runtime_parameters_of_component(component)?;
+        for rp in params {
+            self.clear_runtime_parameter(&rp.component, &rp.vhost, &rp.name)?
+        }
+        Ok(())
+    }
+
+    pub fn set_vhost_limit(&self, vhost: &str, limit: VirtualHostLimitParams) -> Result<()> {
+        let path = format!("vhost-limits/{}/{}", vhost, String::from(limit.kind));
+
+        let mut body = Map::<String, Value>::new();
+        body.insert("value".to_owned(), json!(limit.value));
+
+        let response = self.http_put(&path, &body)?;
+        self.ok_or_status_code_error(response)?;
+        Ok(())
+    }
+
+    pub fn clear_vhost_limit(&self, vhost: &str, kind: EnforcedLimitTarget) -> Result<()> {
+        let path = format!("vhost-limits/{}/{}", vhost, String::from(kind));
+
+        let response = self.http_delete(&path)?;
+        self.ok_or_status_code_error(response)?;
+        Ok(())
+    }
+
+    pub fn list_all_vhost_limits(&self) -> Result<Vec<responses::VirtualHostLimits>> {
+        let response = self.http_get("vhost-limits")?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<Vec<responses::VirtualHostLimits>>()
+            .map_err(Error::from)
+    }
+
+    pub fn list_vhost_limits(&self, vhost: &str) -> Result<Vec<responses::VirtualHostLimits>> {
+        let path = format!("vhost-limits/{}", vhost);
+        let response = self.http_get(&path)?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<Vec<responses::VirtualHostLimits>>()
+            .map_err(Error::from)
     }
 
     pub fn get_cluster_name(&self) -> Result<responses::ClusterIdentity> {

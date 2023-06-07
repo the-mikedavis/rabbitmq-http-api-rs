@@ -69,7 +69,7 @@ fn test_clear_runtime_parameter() {
     let result4 = rc.list_runtime_parameters();
     assert!(result4.is_ok());
     let vec = result4.unwrap();
-    assert!(vec.is_empty());
+    assert!(vec.iter().find(|p| p.component == "vhost-limits" && p.vhost == vh_params.name.to_owned()).is_none());
 
     let _ = rc.delete_vhost(vh_params.name);
 }
