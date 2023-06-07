@@ -1,7 +1,8 @@
 use rabbitmq_http_client::{
     blocking::Client,
-    commons::{UserLimitTarget},
-    requests::{EnforcedLimitParams, UserParams}, password_hashing,
+    commons::UserLimitTarget,
+    password_hashing,
+    requests::{EnforcedLimitParams, UserParams},
 };
 
 mod common;

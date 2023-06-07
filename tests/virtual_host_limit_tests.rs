@@ -1,7 +1,7 @@
 use rabbitmq_http_client::{
     blocking::Client,
     commons::VirtualHostLimitTarget,
-    requests::{VirtualHostParams, EnforcedLimitParams},
+    requests::{EnforcedLimitParams, VirtualHostParams},
 };
 
 mod common;

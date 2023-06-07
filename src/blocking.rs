@@ -1,8 +1,8 @@
 use crate::{
-    commons::{VirtualHostLimitTarget, UserLimitTarget},
+    commons::{UserLimitTarget, VirtualHostLimitTarget},
     requests::{
-        ExchangeParams, PolicyParams, QueueParams, RuntimeParameterDefinition, UserParams,
-        EnforcedLimitParams, VirtualHostParams, XArguments,
+        EnforcedLimitParams, ExchangeParams, PolicyParams, QueueParams, RuntimeParameterDefinition,
+        UserParams, VirtualHostParams, XArguments,
     },
     responses,
 };
@@ -488,7 +488,11 @@ impl<'a> Client<'a> {
         Ok(())
     }
 
-    pub fn set_user_limit(&self, username: &str, limit: EnforcedLimitParams<UserLimitTarget>) -> Result<()> {
+    pub fn set_user_limit(
+        &self,
+        username: &str,
+        limit: EnforcedLimitParams<UserLimitTarget>,
+    ) -> Result<()> {
         let path = format!("user-limits/{}/{}", username, String::from(limit.kind));
 
         let mut body = Map::<String, Value>::new();
@@ -524,7 +528,11 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
-    pub fn set_vhost_limit(&self, vhost: &str, limit: EnforcedLimitParams<VirtualHostLimitTarget>) -> Result<()> {
+    pub fn set_vhost_limit(
+        &self,
+        vhost: &str,
+        limit: EnforcedLimitParams<VirtualHostLimitTarget>,
+    ) -> Result<()> {
         let path = format!("vhost-limits/{}/{}", vhost, String::from(limit.kind));
 
         let mut body = Map::<String, Value>::new();
