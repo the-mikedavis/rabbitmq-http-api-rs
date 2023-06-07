@@ -10,13 +10,7 @@ fn test_upsert_runtime_parameter() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
-    let vh_params = VirtualHostParams {
-        name: "test_upsert_runtime_parameter",
-        tracing: false,
-        description: None,
-        tags: None,
-        default_queue_type: None,
-    };
+    let vh_params = VirtualHostParams::named("test_upsert_runtime_parameter");
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
@@ -47,13 +41,7 @@ fn test_clear_runtime_parameter() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
-    let vh_params = VirtualHostParams {
-        name: "test_clear_runtime_parameter",
-        tracing: false,
-        description: None,
-        tags: None,
-        default_queue_type: None,
-    };
+    let vh_params = VirtualHostParams::named("test_clear_runtime_parameter");
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 

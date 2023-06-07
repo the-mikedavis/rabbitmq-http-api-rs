@@ -13,13 +13,7 @@ fn test_message_ttl_policy() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
-    let vh_params = VirtualHostParams {
-        name: "test_message_ttl_policy",
-        tracing: false,
-        description: None,
-        tags: None,
-        default_queue_type: None,
-    };
+    let vh_params = VirtualHostParams::named("test_message_ttl_policy");
     let _ = rc.delete_vhost(vh_params.name);
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
@@ -50,13 +44,7 @@ fn test_dlx_policy() {
     map.insert("dead-letter-exchange".to_owned(), json!("my-dlx"));
     let policy_definition = Some(map);
 
-    let vh_params = VirtualHostParams {
-        name: "test_dlx_policy",
-        tracing: false,
-        description: None,
-        tags: None,
-        default_queue_type: None,
-    };
+    let vh_params = VirtualHostParams::named("test_dlx_policy");
     let _ = rc.delete_vhost(vh_params.name);
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
@@ -83,13 +71,7 @@ fn test_operator_policy() {
     map.insert("delivery-limit".to_owned(), json!(13));
     let policy_definition = Some(map);
 
-    let vh_params = VirtualHostParams {
-        name: "test_operator_policy",
-        tracing: false,
-        description: None,
-        tags: None,
-        default_queue_type: None,
-    };
+    let vh_params = VirtualHostParams::named("test_operator_policy");
     let _ = rc.delete_vhost(vh_params.name);
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());

@@ -10,13 +10,7 @@ fn test_list_permissions() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
-    let vh_params = VirtualHostParams {
-        name: "test_list_permissions",
-        tracing: false,
-        description: None,
-        tags: None,
-        default_queue_type: None,
-    };
+    let vh_params = VirtualHostParams::named("test_list_permissions");
     let _ = rc.delete_vhost(vh_params.name);
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
@@ -42,13 +36,7 @@ fn test_list_permissions_in() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
-    let vh_params = VirtualHostParams {
-        name: "test_list_permissions_in",
-        tracing: false,
-        description: None,
-        tags: None,
-        default_queue_type: None,
-    };
+    let vh_params = VirtualHostParams::named("test_list_permissions_in");
     let _ = rc.delete_vhost(vh_params.name);
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
@@ -74,13 +62,7 @@ fn test_list_permissions_of() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
-    let vh_params = VirtualHostParams {
-        name: "test_list_permissions_of",
-        tracing: false,
-        description: None,
-        tags: None,
-        default_queue_type: None,
-    };
+    let vh_params = VirtualHostParams::named("test_list_permissions_of");
     let _ = rc.delete_vhost(vh_params.name);
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
@@ -106,13 +88,7 @@ fn test_get_permissions() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
-    let vh_params = VirtualHostParams {
-        name: "test_get_permissions",
-        tracing: false,
-        description: None,
-        tags: None,
-        default_queue_type: None,
-    };
+    let vh_params = VirtualHostParams::named("test_get_permissions");
     let _ = rc.delete_vhost(vh_params.name);
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
