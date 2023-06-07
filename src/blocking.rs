@@ -24,6 +24,8 @@ pub enum Error {
     ClientErrorResponse(u16, HttpClientResponse),
     #[error("API responded with a server error: status code of {0}")]
     ServerErrorResponse(u16, HttpClientResponse),
+    #[error("Health check failed: resource alarms are in effect")]
+    HealthCheckFailed(responses::HealthCheckFailureDetails),
     #[error("an unspecified error")]
     Other,
 }
@@ -725,8 +727,52 @@ impl<'a> Client<'a> {
     }
 
     //
+    // Health Checks
+    //
+
+    pub fn health_check_cluster_wide_alarms(&self) -> Result<()> {
+        self.health_check_alarms("health/checks/alarms")
+    }
+
+    pub fn health_check_local_alarms(&self) -> Result<()> {
+        self.health_check_alarms("health/checks/local-alarms")
+    }
+
+    pub fn health_check_if_node_is_quorum_critical(&self) -> Result<()> {
+        let response = self.http_get("health/checks/node-is-quorum-critical")?;
+        let response2 = self.ok_or_status_code_error_except_503(response)?;
+
+        if response2.status().is_success() {
+            return Ok(());
+        }
+
+        let failure_details = response2
+            .json::<responses::QuorumCriticalityCheckDetails>()
+            .map_err(Error::from)?;
+        Err(Error::HealthCheckFailed(
+            responses::HealthCheckFailureDetails::NodeIsQuorumCritical(failure_details),
+        ))
+    }
+
+    //
     // Implementation
     //
+
+    fn health_check_alarms(&self, path: &str) -> Result<()> {
+        let response = self.http_get(path)?;
+        let response2 = self.ok_or_status_code_error_except_503(response)?;
+
+        if response2.status().is_success() {
+            return Ok(());
+        }
+
+        let failure_details = response2
+            .json::<responses::ClusterAlarmCheckDetails>()
+            .map_err(Error::from)?;
+        Err(Error::HealthCheckFailed(
+            responses::HealthCheckFailureDetails::AlarmCheck(failure_details),
+        ))
+    }
 
     fn list_exchange_bindings_with_source_or_destination(
         &self,
@@ -810,6 +856,24 @@ impl<'a> Client<'a> {
         }
 
         if status.is_server_error() {
+            return Err(Error::ServerErrorResponse(status.as_u16(), response));
+        }
+
+        Ok(response)
+    }
+
+    fn ok_or_status_code_error_except_503(
+        &self,
+        response: HttpClientResponse,
+    ) -> Result<HttpClientResponse> {
+        let status = response.status();
+        if status.is_client_error() {
+            return Err(Error::ClientErrorResponse(status.as_u16(), response));
+        }
+
+        // 503 Service Unavailable is used to indicate a health check failure.
+        // In this case, we want to parse the response and provide a more specific error.
+        if status.is_server_error() && status.as_u16() != 503 {
             return Err(Error::ServerErrorResponse(status.as_u16(), response));
         }
 

@@ -96,18 +96,6 @@ impl<'a> QueueParams<'a> {
         }
     }
 
-    pub fn new_exclusive_classic_queue(name: &'a str, optional_args: XArguments) -> Self {
-        let args = Self::combined_args(optional_args, QueueType::Classic);
-        Self {
-            name,
-            queue_type: QueueType::Classic,
-            durable: false,
-            auto_delete: false,
-            exclusive: true,
-            arguments: args,
-        }
-    }
-
     fn combined_args(optional_args: XArguments, queue_type: QueueType) -> XArguments {
         let mut result = Map::<String, Value>::new();
         result.insert("x-queue-type".to_owned(), Value::String(queue_type.into()));
