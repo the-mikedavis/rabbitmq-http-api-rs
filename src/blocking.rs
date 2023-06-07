@@ -1,8 +1,8 @@
 use crate::{
-    commons::EnforcedLimitTarget,
+    commons::{VirtualHostLimitTarget, UserLimitTarget},
     requests::{
         ExchangeParams, PolicyParams, QueueParams, RuntimeParameterDefinition, UserParams,
-        VirtualHostLimitParams, VirtualHostParams, XArguments,
+        EnforcedLimitParams, VirtualHostParams, XArguments,
     },
     responses,
 };
@@ -488,7 +488,43 @@ impl<'a> Client<'a> {
         Ok(())
     }
 
-    pub fn set_vhost_limit(&self, vhost: &str, limit: VirtualHostLimitParams) -> Result<()> {
+    pub fn set_user_limit(&self, username: &str, limit: EnforcedLimitParams<UserLimitTarget>) -> Result<()> {
+        let path = format!("user-limits/{}/{}", username, String::from(limit.kind));
+
+        let mut body = Map::<String, Value>::new();
+        body.insert("value".to_owned(), json!(limit.value));
+
+        let response = self.http_put(&path, &body)?;
+        self.ok_or_status_code_error(response)?;
+        Ok(())
+    }
+
+    pub fn clear_user_limit(&self, username: &str, kind: UserLimitTarget) -> Result<()> {
+        let path = format!("user-limits/{}/{}", username, String::from(kind));
+
+        let response = self.http_delete(&path)?;
+        self.ok_or_status_code_error(response)?;
+        Ok(())
+    }
+
+    pub fn list_all_user_limits(&self) -> Result<Vec<responses::UserLimits>> {
+        let response = self.http_get("user-limits")?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<Vec<responses::UserLimits>>()
+            .map_err(Error::from)
+    }
+
+    pub fn list_user_limits(&self, username: &str) -> Result<Vec<responses::UserLimits>> {
+        let path = format!("user-limits/{}", username);
+        let response = self.http_get(&path)?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<Vec<responses::UserLimits>>()
+            .map_err(Error::from)
+    }
+
+    pub fn set_vhost_limit(&self, vhost: &str, limit: EnforcedLimitParams<VirtualHostLimitTarget>) -> Result<()> {
         let path = format!("vhost-limits/{}/{}", vhost, String::from(limit.kind));
 
         let mut body = Map::<String, Value>::new();
@@ -499,7 +535,7 @@ impl<'a> Client<'a> {
         Ok(())
     }
 
-    pub fn clear_vhost_limit(&self, vhost: &str, kind: EnforcedLimitTarget) -> Result<()> {
+    pub fn clear_vhost_limit(&self, vhost: &str, kind: VirtualHostLimitTarget) -> Result<()> {
         let path = format!("vhost-limits/{}/{}", vhost, String::from(kind));
 
         let response = self.http_delete(&path)?;

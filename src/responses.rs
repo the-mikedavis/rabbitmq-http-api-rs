@@ -33,6 +33,15 @@ pub struct VirtualHostLimits {
 
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
+pub struct UserLimits {
+    #[serde(rename(deserialize = "user"))]
+    pub username: String,
+    #[serde(rename(deserialize = "value"))]
+    pub limits: EnforcedLimits,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[allow(dead_code)]
 pub struct User {
     pub name: String,
     pub tags: Vec<String>,
