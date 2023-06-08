@@ -199,6 +199,14 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    pub fn list_consumers_in(&self, virtual_host: &str) -> Result<Vec<responses::Consumer>> {
+        let response = self.http_get(&format!("consumers/{}", virtual_host))?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<Vec<responses::Consumer>>()
+            .map_err(Error::from)
+    }
+
     pub fn get_node_info(&self, name: &str) -> Result<responses::ClusterNode> {
         let response = self.http_get(&format!("nodes/{}", name))?;
         let response2 = self.ok_or_status_code_error(response)?;

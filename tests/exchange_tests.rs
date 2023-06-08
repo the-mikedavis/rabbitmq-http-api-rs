@@ -62,5 +62,5 @@ fn test_list_exchanges_in_a_virtual_host() {
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
     let result1 = rc.list_exchanges_in("/");
-    assert!(result1.is_ok());
+    assert!(result1.is_ok(), "list_exchanges_in returned {:?}", result1);
 }
