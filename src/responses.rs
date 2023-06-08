@@ -136,13 +136,34 @@ pub struct ConnectionDetails {
 
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
+pub struct ChannelDetails {
+    #[serde(rename(deserialize = "number"))]
+    pub id: u32,
+    pub name: String,
+    pub connection_name: String,
+    pub node: String,
+    #[serde(rename(deserialize = "peer_host"))]
+    pub client_hostname: String,
+    #[serde(rename(deserialize = "peer_port"))]
+    pub client_port: u32,
+    #[serde(rename(deserialize = "user"))]
+    pub username: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[allow(dead_code)]
 pub struct Consumer {
     pub consumer_tag: String,
     pub active: bool,
-    pub exclusive: bool,
     #[serde(rename(deserialize = "ack_required"))]
     pub manual_ack: bool,
+    pub prefetch_count: u32,
+    pub exclusive: bool,
+    pub arguments: XArguments,
+    #[serde(rename(deserialize = "consumer_timeout"))]
+    pub delivery_ack_timeout: u64,
     pub queue: NameAndVirtualHost,
+    pub channel_details: ChannelDetails,
 }
 
 #[derive(Debug, Deserialize, Clone)]
