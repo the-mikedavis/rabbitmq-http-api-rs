@@ -735,6 +735,17 @@ impl<'a> Client<'a> {
     }
 
     //
+    // Rebalancing
+    //
+
+    pub fn rebalance_queue_leaders(&self) -> Result<()> {
+        let m: HashMap<String, Value> = HashMap::new();
+        self.http_post("rebalance/queues", &m)?;
+
+        Ok(())
+    }
+
+    //
     // Health Checks
     //
 
