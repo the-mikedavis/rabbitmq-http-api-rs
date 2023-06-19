@@ -1,6 +1,6 @@
 use crate::commons::{ExchangeType, PolicyTarget, QueueType};
 use serde::Serialize;
-use serde_json::{Map, Value, json};
+use serde_json::{json, Map, Value};
 
 #[derive(Serialize)]
 pub struct VirtualHostParams<'a> {
@@ -99,7 +99,13 @@ impl<'a> QueueParams<'a> {
         }
     }
 
-    pub fn new(name: &'a str, queue_type: QueueType, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
+    pub fn new(
+        name: &'a str,
+        queue_type: QueueType,
+        durable: bool,
+        auto_delete: bool,
+        optional_args: XArguments,
+    ) -> Self {
         let args = Self::combined_args(optional_args, &queue_type);
         Self {
             name,
@@ -107,7 +113,7 @@ impl<'a> QueueParams<'a> {
             durable,
             auto_delete,
             exclusive: false,
-            arguments: args
+            arguments: args,
         }
     }
 
