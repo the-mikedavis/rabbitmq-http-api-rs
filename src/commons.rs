@@ -77,7 +77,7 @@ impl From<ExchangeType> for String {
     }
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, Copy)]
 #[serde(rename_all(serialize = "lowercase", deserialize = "PascalCase"))]
 pub enum QueueType {
     Classic,
