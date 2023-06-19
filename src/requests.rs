@@ -1,6 +1,6 @@
 use crate::commons::{ExchangeType, PolicyTarget, QueueType};
 use serde::Serialize;
-use serde_json::{Map, Value};
+use serde_json::{Map, Value, json};
 
 #[derive(Serialize)]
 pub struct VirtualHostParams<'a> {
@@ -61,7 +61,8 @@ pub struct QueueParams<'a> {
 
 impl<'a> QueueParams<'a> {
     pub fn new_quorum_queue(name: &'a str, optional_args: XArguments) -> Self {
-        let args = Self::combined_args(optional_args, QueueType::Quorum);
+        let typ = QueueType::Quorum;
+        let args = Self::combined_args(optional_args, &typ);
         Self {
             name,
             queue_type: QueueType::Quorum,
@@ -73,7 +74,8 @@ impl<'a> QueueParams<'a> {
     }
 
     pub fn new_stream(name: &'a str, optional_args: XArguments) -> Self {
-        let args = Self::combined_args(optional_args, QueueType::Stream);
+        let typ = QueueType::Stream;
+        let args = Self::combined_args(optional_args, &typ);
         Self {
             name,
             queue_type: QueueType::Stream,
@@ -85,7 +87,8 @@ impl<'a> QueueParams<'a> {
     }
 
     pub fn new_durable_classic_queue(name: &'a str, optional_args: XArguments) -> Self {
-        let args = Self::combined_args(optional_args, QueueType::Classic);
+        let typ = QueueType::Classic;
+        let args = Self::combined_args(optional_args, &typ);
         Self {
             name,
             queue_type: QueueType::Classic,
@@ -96,9 +99,21 @@ impl<'a> QueueParams<'a> {
         }
     }
 
-    fn combined_args(optional_args: XArguments, queue_type: QueueType) -> XArguments {
+    pub fn new(name: &'a str, queue_type: QueueType, durable: bool, auto_delete: bool, optional_args: XArguments) -> Self {
+        let args = Self::combined_args(optional_args, &queue_type);
+        Self {
+            name,
+            queue_type,
+            durable,
+            auto_delete,
+            exclusive: false,
+            arguments: args
+        }
+    }
+
+    pub fn combined_args(optional_args: XArguments, queue_type: &QueueType) -> XArguments {
         let mut result = Map::<String, Value>::new();
-        result.insert("x-queue-type".to_owned(), Value::String(queue_type.into()));
+        result.insert("x-queue-type".to_owned(), json!(queue_type));
 
         if let Some(mut val) = optional_args {
             result.append(&mut val)
