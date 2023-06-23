@@ -11,7 +11,7 @@ fn test_list_vhosts() {
 
     assert!(result.is_ok());
     let vec = result.unwrap();
-    assert!(vec.iter().find(|vh| vh.name == "/").is_some())
+    assert!(vec.iter().any(|vh| vh.name == "/"))
 }
 
 #[test]
@@ -32,10 +32,10 @@ fn test_create_vhost() {
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
     let name = "rust_test_create_vhost";
 
-    let _ = rc.delete_vhost(&name);
+    let _ = rc.delete_vhost(name);
 
     let result1 = rc.get_vhost(name);
-    assert!(!result1.is_ok());
+    assert!(result1.is_err());
 
     let desc = format!("{} description", &name);
     let params = VirtualHostParams {
@@ -53,7 +53,7 @@ fn test_create_vhost() {
     let vh2 = result3.unwrap();
     assert!(vh2.name == name);
 
-    let _ = rc.delete_vhost(&name);
+    let _ = rc.delete_vhost(name);
 }
 
 #[test]
@@ -62,10 +62,10 @@ fn test_update_vhost() {
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
     let name = "rust_test_update_vhost";
 
-    let _ = rc.delete_vhost(&name);
+    let _ = rc.delete_vhost(name);
 
     let result1 = rc.get_vhost(name);
-    assert!(!result1.is_ok());
+    assert!(result1.is_err());
 
     let desc = format!("{} description", &name);
     let params1 = VirtualHostParams {
@@ -91,7 +91,7 @@ fn test_update_vhost() {
     let vh = result4.unwrap();
     assert!(vh.description.unwrap() == alt_desc);
 
-    let _ = rc.delete_vhost(&name);
+    let _ = rc.delete_vhost(name);
 }
 
 #[test]
@@ -114,7 +114,7 @@ fn test_delete_vhost() {
     let result2 = rc.get_vhost(name);
     assert!(result2.is_ok());
 
-    let _ = rc.delete_vhost(&name);
+    let _ = rc.delete_vhost(name);
     let result3 = rc.get_vhost(name);
-    assert!(!result3.is_ok());
+    assert!(result3.is_err());
 }

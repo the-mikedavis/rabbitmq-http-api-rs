@@ -15,7 +15,7 @@ fn test_upsert_runtime_parameter() {
     assert!(result1.is_ok());
 
     let mut val = max_connections_limit(9988);
-    let rpf = example_runtime_parameter_definition(&vh_params.name, &mut val);
+    let rpf = example_runtime_parameter_definition(vh_params.name, &mut val);
     let result2 = rc.upsert_runtime_parameter(&rpf);
     assert!(result2.is_ok());
 
@@ -46,7 +46,7 @@ fn test_clear_runtime_parameter() {
     assert!(result1.is_ok());
 
     let mut val = max_queue_limit(4444);
-    let rp = example_runtime_parameter_definition(&vh_params.name, &mut val);
+    let rp = example_runtime_parameter_definition(vh_params.name, &mut val);
     let result2 = rc.upsert_runtime_parameter(&rp);
     assert!(result2.is_ok());
     await_metric_emission(1000);
@@ -57,10 +57,9 @@ fn test_clear_runtime_parameter() {
     let result4 = rc.list_runtime_parameters();
     assert!(result4.is_ok());
     let vec = result4.unwrap();
-    assert!(vec
+    assert!(!vec
         .iter()
-        .find(|p| p.component == "vhost-limits" && p.vhost == vh_params.name.to_owned())
-        .is_none());
+        .any(|p| p.component == "vhost-limits" && p.vhost == *vh_params.name));
 
     let _ = rc.delete_vhost(vh_params.name);
 }

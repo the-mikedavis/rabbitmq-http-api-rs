@@ -21,6 +21,6 @@ fn test_list_vhost_consumers() {
     let result1 = rc.create_vhost(&vh_params);
     assert!(result1.is_ok());
 
-    let result2 = rc.list_consumers_in(&vh_params.name);
+    let result2 = rc.list_consumers_in(vh_params.name);
     assert!(result2.is_ok(), "list_consumers_in returned {:?}", result2);
 }

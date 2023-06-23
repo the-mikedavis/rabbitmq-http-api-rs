@@ -92,9 +92,9 @@ fn test_operator_policy() {
 fn test_a_policy(rc: &Client, policy: &PolicyParams) {
     // initially, there should be no such policy
     let policies = rc.list_policies_in(policy.vhost).unwrap();
-    assert!(policies.iter().find(|p| p.name == policy.name).is_none());
+    assert!(!policies.iter().any(|p| p.name == policy.name));
 
-    let result = rc.declare_policy(&policy);
+    let result = rc.declare_policy(policy);
     assert!(result.is_ok(), "declare_policy returned {:?}", result);
 
     // validate it was created as expected
@@ -106,15 +106,15 @@ fn test_a_policy(rc: &Client, policy: &PolicyParams) {
 
     // there should be no such policy anymore
     let policies = rc.list_policies().unwrap();
-    assert!(policies.iter().find(|p| p.name == policy.name).is_none());
+    assert!(!policies.iter().any(|p| p.name == policy.name));
 }
 
 fn test_an_operator_policy(rc: &Client, policy: &PolicyParams) {
     // initially, there should be no such policy
     let policies = rc.list_operator_policies_in(policy.vhost).unwrap();
-    assert!(policies.iter().find(|p| p.name == policy.name).is_none());
+    assert!(!policies.iter().any(|p| p.name == policy.name));
 
-    let result = rc.declare_operator_policy(&policy);
+    let result = rc.declare_operator_policy(policy);
     assert!(result.is_ok(), "declare_policy returned {:?}", result);
 
     // validate it was created as expected
@@ -126,5 +126,5 @@ fn test_an_operator_policy(rc: &Client, policy: &PolicyParams) {
 
     // there should be no such policy anymore
     let policies = rc.list_operator_policies().unwrap();
-    assert!(policies.iter().find(|p| p.name == policy.name).is_none());
+    assert!(!policies.iter().any(|p| p.name == policy.name));
 }
