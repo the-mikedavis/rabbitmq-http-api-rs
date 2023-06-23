@@ -1,5 +1,5 @@
 use crate::{
-    commons::{UserLimitTarget, VirtualHostLimitTarget},
+    commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
     requests::{
         EnforcedLimitParams, ExchangeParams, PolicyParams, QueueParams, RuntimeParameterDefinition,
         UserParams, VirtualHostParams, XArguments,
@@ -26,6 +26,10 @@ pub enum Error {
     ServerErrorResponse(u16, HttpClientResponse),
     #[error("Health check failed: resource alarms are in effect")]
     HealthCheckFailed(responses::HealthCheckFailureDetails),
+    #[error("Could not find the requested resource")]
+    NotFound(),
+    #[error("Can't delete a binding: multiple matching bindings found")]
+    ManyMatchingBindings(),
     #[error("an unspecified error")]
     Other,
 }
@@ -390,6 +394,52 @@ impl<'a> Client<'a> {
         ))?;
         self.ok_or_status_code_error(response)?;
         Ok(())
+    }
+
+    pub fn delete_binding(
+        &self,
+        virtual_host: &str,
+        source: &str,
+        destination: &str,
+        destination_type: BindingDestinationType,
+        routing_key: Option<&str>,
+        arguments: XArguments,
+    ) -> Result<HttpClientResponse> {
+        let args = arguments.unwrap();
+
+        // to delete a binding, we need properties, that we can get from the server
+        // so we search for the binding before deleting it
+        let bindings = match destination_type {
+            BindingDestinationType::Queue => {
+                self.list_queue_bindings(virtual_host, destination).unwrap()
+            }
+            BindingDestinationType::Exchange => self
+                .list_exchange_bindings_with_destination(virtual_host, destination)
+                .unwrap(),
+        };
+
+        let mut bs = bindings.iter().filter(|b| {
+            b.source == source && b.routing_key == routing_key.unwrap() && b.arguments == args
+        });
+        match bs.clone().count() {
+            0 => Err(Error::NotFound()),
+            1 => {
+                let response = self.http_delete(&format!(
+                    // /api/bindings/vhost/e/exchange/[eq]/destination/props
+                    "bindings/{}/e/{}/{}/{}/{}",
+                    self.percent_encode(virtual_host),
+                    self.percent_encode(source),
+                    match destination_type {
+                        BindingDestinationType::Queue => "q",
+                        BindingDestinationType::Exchange => "e",
+                    },
+                    self.percent_encode(destination),
+                    self.percent_encode(bs.next().unwrap().properties_key.as_str()),
+                ))?;
+                self.ok_or_status_code_error(response)
+            }
+            _ => Err(Error::ManyMatchingBindings()),
+        }
     }
 
     pub fn purge_queue(&self, virtual_host: &str, name: &str) -> Result<()> {
