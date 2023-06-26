@@ -1,8 +1,8 @@
 use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
     requests::{
-        EnforcedLimitParams, ExchangeParams, PolicyParams, QueueParams, RuntimeParameterDefinition,
-        UserParams, VirtualHostParams, XArguments,
+        EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams, QueueParams,
+        RuntimeParameterDefinition, UserParams, VirtualHostParams, XArguments,
     },
     responses,
 };
@@ -279,6 +279,30 @@ impl<'a> Client<'a> {
             &format!("users/{}", self.percent_encode(params.name)),
             params,
         )?;
+        self.ok_or_status_code_error(response)?;
+        Ok(())
+    }
+
+    pub fn declare_permissions(&self, params: &Permissions) -> Result<()> {
+        let response = self.http_put(
+            // /api/permissions/vhost/user
+            &format!(
+                "permissions/{}/{}",
+                self.percent_encode(params.vhost),
+                self.percent_encode(params.user)
+            ),
+            params,
+        )?;
+        self.ok_or_status_code_error(response)?;
+        Ok(())
+    }
+
+    pub fn delete_permissions(&self, vhost: &str, user: &str) -> Result<()> {
+        let response = self.http_delete(&format!(
+            "permissions/{}/{}",
+            self.percent_encode(vhost),
+            self.percent_encode(user)
+        ))?;
         self.ok_or_status_code_error(response)?;
         Ok(())
     }
