@@ -133,3 +133,112 @@ fn test_list_only_exchange_bindings() {
     let _ = rc.delete_queue(vh_name, cq);
     let _ = rc.delete_exchange(vh_name, fanout2);
 }
+
+#[test]
+fn test_delete_queue_bindings() {
+    let endpoint = endpoint();
+    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
+
+    let vh_name = "/";
+    let cq = "rust.cq.delete_queue_binding";
+    let fanout = "amq.fanout";
+
+    let result1 = rc.declare_queue(vh_name, &QueueParams::new_durable_classic_queue(cq, None));
+    assert!(result1.is_ok(), "declare_queue returned {:?}", result1);
+
+    let result2 = rc.bind_queue(vh_name, cq, fanout, Some("foo"), None);
+    assert!(result2.is_ok(), "bind_queue returned {:?}", result2);
+
+    let result3 = rc.list_queue_bindings(vh_name, cq);
+    assert!(
+        result3.is_ok(),
+        "list_queue_bindings returned {:?}",
+        result3
+    );
+    let vec = result3.unwrap();
+    assert!(vec
+        .iter()
+        .any(|b| b.destination_type == BindingDestinationType::Queue
+            && b.vhost == vh_name
+            && b.destination == cq
+            && b.source == fanout));
+
+    let m: serde_json::Map<String, serde_json::Value> = serde_json::Map::new();
+    let result4 = rc.delete_binding(
+        vh_name,
+        fanout,
+        cq,
+        BindingDestinationType::Queue,
+        Some("foo"),
+        Some(m),
+    );
+    assert!(result4.is_ok(), "delete_binding returned {:?}", result4);
+
+    let result5 = rc.list_queue_bindings(vh_name, cq);
+    assert!(
+        result5.is_ok(),
+        "list_queue_bindings returned {:?}",
+        result5
+    );
+    let vec = result5.unwrap();
+    assert!(!vec
+        .iter()
+        .any(|b| b.destination_type == BindingDestinationType::Queue
+            && b.vhost == vh_name
+            && b.destination == cq
+            && b.source == fanout));
+
+    let _ = rc.delete_queue(vh_name, cq);
+}
+
+#[test]
+fn test_delete_exchange_bindings() {
+    let endpoint = endpoint();
+    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
+
+    let vh_name = "/";
+    let fanout = "amq.fanout";
+    let direct = "amq.direct";
+
+    let result2 = rc.bind_exchange(vh_name, direct, fanout, Some("foo"), None);
+    assert!(result2.is_ok(), "bind_queue returned {:?}", result2);
+
+    let result3 = rc.list_exchange_bindings_with_destination(vh_name, direct);
+    assert!(
+        result3.is_ok(),
+        "list_exchange_bindings_with_destination returned {:?}",
+        result3
+    );
+    let vec = result3.unwrap();
+    assert!(vec
+        .iter()
+        .any(|b| b.destination_type == BindingDestinationType::Exchange
+            && b.vhost == vh_name
+            && b.destination == direct
+            && b.source == fanout));
+
+    let m: serde_json::Map<String, serde_json::Value> = serde_json::Map::new();
+    let result4 = rc.delete_binding(
+        vh_name,
+        fanout,
+        direct,
+        BindingDestinationType::Exchange,
+        Some("foo"),
+        Some(m),
+    );
+    assert!(result4.is_ok(), "delete_binding returned {:?}", result4);
+
+    let result5 = rc.list_exchange_bindings_with_destination(vh_name, direct);
+    assert!(
+        result5.is_ok(),
+        "list_exchange_bindings_with_destination returned {:?}",
+        result5
+    );
+    let vec = result5.unwrap();
+    assert!(!vec
+        .iter()
+        .any(|b| b.destination_type == BindingDestinationType::Exchange
+            && b.vhost == vh_name
+            && b.destination == direct
+            && b.source == fanout));
+}
