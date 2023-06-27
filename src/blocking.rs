@@ -617,7 +617,11 @@ impl<'a> Client<'a> {
         vhost: &str,
         limit: EnforcedLimitParams<VirtualHostLimitTarget>,
     ) -> Result<()> {
-        let path = format!("vhost-limits/{}/{}", vhost, String::from(limit.kind));
+        let path = format!(
+            "vhost-limits/{}/{}",
+            self.percent_encode(vhost),
+            String::from(limit.kind)
+        );
 
         let mut body = Map::<String, Value>::new();
         body.insert("value".to_owned(), json!(limit.value));
@@ -628,7 +632,11 @@ impl<'a> Client<'a> {
     }
 
     pub fn clear_vhost_limit(&self, vhost: &str, kind: VirtualHostLimitTarget) -> Result<()> {
-        let path = format!("vhost-limits/{}/{}", vhost, String::from(kind));
+        let path = format!(
+            "vhost-limits/{}/{}",
+            self.percent_encode(vhost),
+            String::from(kind)
+        );
 
         let response = self.http_delete(&path)?;
         self.ok_or_status_code_error(response)?;
@@ -644,7 +652,7 @@ impl<'a> Client<'a> {
     }
 
     pub fn list_vhost_limits(&self, vhost: &str) -> Result<Vec<responses::VirtualHostLimits>> {
-        let path = format!("vhost-limits/{}", vhost);
+        let path = format!("vhost-limits/{}", self.percent_encode(vhost));
         let response = self.http_get(&path)?;
         let response2 = self.ok_or_status_code_error(response)?;
         response2
