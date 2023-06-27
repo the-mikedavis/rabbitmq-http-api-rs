@@ -48,16 +48,18 @@ pub type Result<T> = std::result::Result<T, Error>;
 ///
 /// Example
 /// ```rust
+/// use rabbitmq_http_client::blocking::Client;
+///
 /// let endpoint = "http://localhost:15672/api/";
 /// let username = "username";
 /// let password = "password";
 /// let rc = Client::new_with_basic_auth_credentials(&endpoint, &username, &password);
 /// // list cluster nodes
-/// rc.list_nodes()?;
+/// rc.list_nodes();
 /// // list user connections
-/// rc.list_connections()?;
+/// rc.list_connections();
 /// // fetch information and metrics of a specific queue
-/// rc.get_queue_info("/", "qq.1")?;
+/// rc.get_queue_info("/", "qq.1");
 /// ```
 pub struct Client<'a> {
     endpoint: &'a str,
@@ -70,6 +72,8 @@ impl<'a> Client<'a> {
     ///
     /// Example
     /// ```rust
+    /// use rabbitmq_http_client::blocking::Client;
+    ///
     /// let endpoint = "http://localhost:15672/api/";
     /// let username = "username";
     /// let password = "password";
