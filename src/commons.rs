@@ -128,7 +128,7 @@ impl BindingDestinationType {
     pub fn path_appreviation(&self) -> String {
         match *self {
             BindingDestinationType::Queue => "q".to_owned(),
-            BindingDestinationType::Exchange => "e".to_owned()
+            BindingDestinationType::Exchange => "e".to_owned(),
         }
     }
 }

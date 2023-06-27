@@ -434,16 +434,16 @@ impl<'a> Client<'a> {
         // to delete a binding, we need properties, that we can get from the server
         // so we search for the binding before deleting it
         let bindings = match destination_type {
-            BindingDestinationType::Queue => {
-                self.list_queue_bindings(virtual_host, destination)?
+            BindingDestinationType::Queue => self.list_queue_bindings(virtual_host, destination)?,
+            BindingDestinationType::Exchange => {
+                self.list_exchange_bindings_with_destination(virtual_host, destination)?
             }
-            BindingDestinationType::Exchange => self
-                .list_exchange_bindings_with_destination(virtual_host, destination)?
         };
 
-        let bs: Vec<&BindingInfo> = bindings.iter().filter(|b| {
-            b.source == source && b.routing_key == routing_key && b.arguments == args
-        }).collect();
+        let bs: Vec<&BindingInfo> = bindings
+            .iter()
+            .filter(|b| b.source == source && b.routing_key == routing_key && b.arguments == args)
+            .collect();
         match bs.len() {
             0 => Err(Error::NotFound()),
             1 => {
