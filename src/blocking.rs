@@ -123,6 +123,18 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists all connections in the given virtual host.
+    pub fn list_connections_in(&self, virtual_host: &str) -> Result<Vec<responses::Connection>> {
+        let response = self.http_get(&format!(
+            "vhosts/{}/connections",
+            self.percent_encode(virtual_host)
+        ))?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<Vec<responses::Connection>>()
+            .map_err(Error::from)
+    }
+
     /// Lists all connections of a specific user.
     pub fn list_user_connections(&self, username: &str) -> Result<Vec<responses::UserConnection>> {
         let response = self.http_get(&format!(

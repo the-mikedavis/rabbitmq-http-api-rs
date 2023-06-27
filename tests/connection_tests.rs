@@ -24,3 +24,17 @@ fn test_list_user_connections() {
         result1
     );
 }
+
+#[test]
+fn test_list_virtual_host_connections() {
+    let endpoint = endpoint();
+    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
+
+    let vh_name = "/";
+    let result1 = rc.list_connections_in(&vh_name);
+    assert!(
+        result1.is_ok(),
+        "list_connections_in returned {:?}",
+        result1
+    );
+}
