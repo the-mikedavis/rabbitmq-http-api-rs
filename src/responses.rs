@@ -6,18 +6,29 @@ use serde_json::Map;
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct VirtualHostMetadata {
+    /// Optional tags
     pub tags: Option<Vec<String>>,
+    /// Optional description
     pub description: Option<String>,
+    /// Default queue type used in this virtual host when clients
+    /// do not explicitly specify one
     pub default_queue_type: Option<String>,
 }
 
+/// Represents a [RabbitMQ virtual host](https://rabbitmq.com/vhosts.html).
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct VirtualHost {
+    /// Virtual host name
     pub name: String,
+    /// Optional tags
     pub tags: Option<Vec<String>>,
+    /// Optional description
     pub description: Option<String>,
+    /// Default queue type used in this virtual host when clients
+    /// do not explicitly specify one
     pub default_queue_type: Option<String>,
+    /// All virtual host metadata combined
     pub metadata: VirtualHostMetadata,
 }
 
@@ -48,27 +59,41 @@ pub struct User {
     pub password_hash: String,
 }
 
+/// Represents a client connection.
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct Connection {
+    /// Connection name. Use it to close this connection.
     pub name: String,
+    /// To what node the client is connected
     pub node: String,
+    /// Connection state
     pub state: String,
+    /// What protocol the connection uses
     pub protocol: String,
+    /// The name of the authenticated user
     #[serde(rename(deserialize = "user"))]
     pub username: String,
+    /// When was this connection opened (a timestamp).
     pub connected_at: u64,
+    /// The hostname used to connect.
     #[serde(rename(deserialize = "host"))]
     pub server_hostname: String,
+    /// The port used to connect.
     #[serde(rename(deserialize = "port"))]
     pub server_port: u32,
+    /// Client hostname.
     #[serde(rename(deserialize = "peer_host"))]
     pub client_hostname: String,
+    /// Ephemeral client port.
     #[serde(rename(deserialize = "peer_port"))]
     pub client_port: u32,
+    /// Maximum number of channels that can be opened on this connection.
     pub channel_max: u16,
+    /// How many channels are opened on this connection.
     #[serde(rename(deserialize = "channels"))]
     pub channel_count: u16,
+    /// Client-provided properties (metadata and capabilities).
     pub client_properties: ClientProperties,
 }
 

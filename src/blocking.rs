@@ -36,6 +36,29 @@ pub enum Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+/// A client for the [RabbitMQ HTTP API](https://rabbitmq.com/management.html#http-api).
+///
+/// Most functions provided by this type represent various HTTP API operations.
+/// For example,
+///
+///  * the [`Client::get_queue_info`] function corresponds to the `GET /api/queues/{vhost}/{name}` endpoint
+///  * the [`Client::list_user_connections`] function corresponds to the `GET /api/connections/username/{username}` endpoint
+///
+/// and so on.
+///
+/// Example
+/// ```rust
+/// let endpoint = "http://localhost:15672/api/";
+/// let username = "username";
+/// let password = "password";
+/// let rc = Client::new_with_basic_auth_credentials(&endpoint, &username, &password);
+/// // list cluster nodes
+/// rc.list_nodes()?;
+/// // list user connections
+/// rc.list_connections()?;
+/// // fetch information and metrics of a specific queue
+/// rc.get_queue_info("/", "qq.1")?;
+/// ```
 pub struct Client<'a> {
     endpoint: &'a str,
     username: &'a str,
@@ -43,6 +66,15 @@ pub struct Client<'a> {
 }
 
 impl<'a> Client<'a> {
+    /// Instantiates a client that will use Basic HTTP Auth for authentication.
+    ///
+    /// Example
+    /// ```rust
+    /// let endpoint = "http://localhost:15672/api/";
+    /// let username = "username";
+    /// let password = "password";
+    /// let rc = Client::new_with_basic_auth_credentials(&endpoint, &username, &password);
+    /// ```
     pub fn new_with_basic_auth_credentials(
         endpoint: &'a str,
         username: &'a str,
@@ -55,6 +87,7 @@ impl<'a> Client<'a> {
         }
     }
 
+    /// Lists cluster nodes.
     pub fn list_nodes(&self) -> Result<Vec<responses::ClusterNode>> {
         let response = self.http_get("nodes")?;
         let response2 = self.ok_or_status_code_error(response)?;
@@ -63,6 +96,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists virtual hosts in the cluster.
     pub fn list_vhosts(&self) -> Result<Vec<responses::VirtualHost>> {
         let response = self.http_get("vhosts")?;
         let response2 = self.ok_or_status_code_error(response)?;
@@ -71,6 +105,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists users in the internal database.
     pub fn list_users(&self) -> Result<Vec<responses::User>> {
         let response = self.http_get("users")?;
         let response2 = self.ok_or_status_code_error(response)?;
@@ -79,6 +114,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists all client connections across the cluster.
     pub fn list_connections(&self) -> Result<Vec<responses::Connection>> {
         let response = self.http_get("connections")?;
         let response2 = self.ok_or_status_code_error(response)?;
@@ -87,6 +123,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists all connections of a specific user.
     pub fn list_user_connections(&self, username: &str) -> Result<Vec<responses::UserConnection>> {
         let response = self.http_get(&format!(
             "connections/username/{}",
