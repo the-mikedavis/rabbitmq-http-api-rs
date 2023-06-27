@@ -124,6 +124,15 @@ pub enum BindingDestinationType {
     Exchange,
 }
 
+impl BindingDestinationType {
+    pub fn path_appreviation(&self) -> String {
+        match *self {
+            BindingDestinationType::Queue => "q".to_owned(),
+            BindingDestinationType::Exchange => "e".to_owned()
+        }
+    }
+}
+
 impl From<&str> for BindingDestinationType {
     fn from(value: &str) -> Self {
         match value {

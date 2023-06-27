@@ -4,7 +4,7 @@ use crate::{
         EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams, QueueParams,
         RuntimeParameterDefinition, UserParams, VirtualHostParams, XArguments,
     },
-    responses,
+    responses::{self, BindingInfo},
 };
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use reqwest::blocking::Client as HttpClient;
@@ -426,7 +426,7 @@ impl<'a> Client<'a> {
         source: &str,
         destination: &str,
         destination_type: BindingDestinationType,
-        routing_key: Option<&str>,
+        routing_key: &str,
         arguments: XArguments,
     ) -> Result<HttpClientResponse> {
         let args = arguments.unwrap();
@@ -435,30 +435,27 @@ impl<'a> Client<'a> {
         // so we search for the binding before deleting it
         let bindings = match destination_type {
             BindingDestinationType::Queue => {
-                self.list_queue_bindings(virtual_host, destination).unwrap()
+                self.list_queue_bindings(virtual_host, destination)?
             }
             BindingDestinationType::Exchange => self
-                .list_exchange_bindings_with_destination(virtual_host, destination)
-                .unwrap(),
+                .list_exchange_bindings_with_destination(virtual_host, destination)?
         };
 
-        let mut bs = bindings.iter().filter(|b| {
-            b.source == source && b.routing_key == routing_key.unwrap() && b.arguments == args
-        });
-        match bs.clone().count() {
+        let bs: Vec<&BindingInfo> = bindings.iter().filter(|b| {
+            b.source == source && b.routing_key == routing_key && b.arguments == args
+        }).collect();
+        match bs.len() {
             0 => Err(Error::NotFound()),
             1 => {
+                let first_key = bs.first().unwrap().properties_key.as_str();
                 let response = self.http_delete(&format!(
                     // /api/bindings/vhost/e/exchange/[eq]/destination/props
                     "bindings/{}/e/{}/{}/{}/{}",
                     self.percent_encode(virtual_host),
                     self.percent_encode(source),
-                    match destination_type {
-                        BindingDestinationType::Queue => "q",
-                        BindingDestinationType::Exchange => "e",
-                    },
+                    destination_type.path_appreviation(),
                     self.percent_encode(destination),
-                    self.percent_encode(bs.next().unwrap().properties_key.as_str()),
+                    self.percent_encode(first_key),
                 ))?;
                 self.ok_or_status_code_error(response)
             }

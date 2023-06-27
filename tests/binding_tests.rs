@@ -169,7 +169,7 @@ fn test_delete_queue_bindings() {
         fanout,
         cq,
         BindingDestinationType::Queue,
-        Some("foo"),
+        "foo",
         Some(m),
     );
     assert!(result4.is_ok(), "delete_binding returned {:?}", result4);
@@ -223,7 +223,7 @@ fn test_delete_exchange_bindings() {
         fanout,
         direct,
         BindingDestinationType::Exchange,
-        Some("foo"),
+        "foo",
         Some(m),
     );
     assert!(result4.is_ok(), "delete_binding returned {:?}", result4);
