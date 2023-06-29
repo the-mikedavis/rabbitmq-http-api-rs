@@ -7,7 +7,10 @@ use crate::{
     responses::{self, BindingInfo},
 };
 use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
-use reqwest::blocking::Client as HttpClient;
+use reqwest::{
+    blocking::Client as HttpClient,
+    header::{HeaderMap, HeaderValue, InvalidHeaderValue},
+};
 use serde::Serialize;
 use serde_json::{json, Map, Value};
 use std::{collections::HashMap, fmt::Display};
@@ -30,6 +33,8 @@ pub enum Error {
     NotFound(),
     #[error("Can't delete a binding: multiple matching bindings found")]
     ManyMatchingBindings(),
+    #[error("could not convert provided value into an HTTP header value")]
+    InvalidHeaderValue(#[from] InvalidHeaderValue),
     #[error("an unspecified error")]
     Other,
 }
@@ -135,8 +140,23 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
-    pub fn close_connection(&self, name: &str) -> Result<()> {
-        let response = self.http_delete(&format!("connections/{}", self.percent_encode(name)))?;
+    pub fn close_connection(&self, name: &str, reason: Option<&str>) -> Result<()> {
+        let response: HttpClientResponse;
+        match reason {
+            None => {
+                response =
+                    self.http_delete(&format!("connections/{}", self.percent_encode(name)))?;
+            }
+            Some(value) => {
+                let mut headers = HeaderMap::new();
+                let hdr = HeaderValue::from_str(value)?;
+                headers.insert("X-Reason", hdr);
+                response = self.http_delete_with_headers(
+                    &format!("connections/{}", self.percent_encode(name)),
+                    headers,
+                )?;
+            }
+        }
         let _ = self.ok_or_status_code_error_except_404(response)?;
         Ok(())
     }
@@ -1049,6 +1069,19 @@ impl<'a> Client<'a> {
         let response = HttpClient::new()
             .delete(self.rooted_path(path))
             .basic_auth(self.username, Some(self.password))
+            .send();
+        self.ok_or_http_client_error(response)
+    }
+
+    fn http_delete_with_headers(
+        &self,
+        path: &str,
+        headers: HeaderMap,
+    ) -> crate::blocking::Result<HttpClientResponse> {
+        let response = HttpClient::new()
+            .delete(self.rooted_path(path))
+            .basic_auth(self.username, Some(self.password))
+            .headers(headers)
             .send();
         self.ok_or_http_client_error(response)
     }
