@@ -389,7 +389,7 @@ impl<'a> Client<'a> {
         Ok(())
     }
 
-    pub fn delete_permissions(&self, vhost: &str, user: &str) -> Result<()> {
+    pub fn grant_permissions(&self, vhost: &str, user: &str) -> Result<()> {
         let response = self.http_delete(&format!(
             "permissions/{}/{}",
             self.percent_encode(vhost),

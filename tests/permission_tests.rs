@@ -150,7 +150,7 @@ fn test_declare_permissions() {
         }
     );
 
-    let result4 = rc.delete_permissions("test_declare_permissions", "guest");
+    let result4 = rc.grant_permissions("test_declare_permissions", "guest");
     assert!(result4.is_ok(), "delete_permissions returned {:?}", result4);
 
     let result5 = rc.get_permissions("test_declare_permissions", "guest");
