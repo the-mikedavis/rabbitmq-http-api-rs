@@ -159,6 +159,18 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    pub fn list_channels_in(&self, virtual_host: &str) -> Result<Vec<responses::Channel>> {
+        let response = self.http_get(&format!(
+            "vhosts/{}/channels",
+            self.percent_encode(virtual_host)
+        ))?;
+
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<Vec<responses::Channel>>()
+            .map_err(Error::from)
+    }
+
     pub fn list_queues(&self) -> Result<Vec<responses::QueueInfo>> {
         let response = self.http_get("queues")?;
         let response2 = self.ok_or_status_code_error(response)?;

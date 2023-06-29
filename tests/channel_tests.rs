@@ -11,3 +11,17 @@ fn test_list_channels() {
     let result1 = rc.list_channels();
     assert!(result1.is_ok(), "list_channels returned {:?}", result1);
 }
+
+#[test]
+fn test_list_virtual_host_channels() {
+    let endpoint = endpoint();
+    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
+
+    let vh_name = "/";
+    let result1 = rc.list_channels_in(&vh_name);
+    assert!(
+        result1.is_ok(),
+        "list_channels_in returned {:?}",
+        result1
+    );
+}
