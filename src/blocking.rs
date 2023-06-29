@@ -493,7 +493,11 @@ impl<'a> Client<'a> {
     }
 
     pub fn clear_permissions(&self, virtual_host: &str, username: &str) -> Result<()> {
-        let response = self.http_delete(&format!("permissions/{}/{}", self.percent_encode(virtual_host), self.percent_encode(username)))?;
+        let response = self.http_delete(&format!(
+            "permissions/{}/{}",
+            self.percent_encode(virtual_host),
+            self.percent_encode(username)
+        ))?;
         self.ok_or_status_code_error_except_404(response)?;
         Ok(())
     }
@@ -1061,7 +1065,7 @@ impl<'a> Client<'a> {
     fn ok_or_status_code_error_except_404(
         &self,
         response: HttpClientResponse,
-        ) -> Result<HttpClientResponse> {
+    ) -> Result<HttpClientResponse> {
         let status = response.status();
 
         // Do not consider 404s an error to allow for idempotent deletes

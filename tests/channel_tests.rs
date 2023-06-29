@@ -19,9 +19,5 @@ fn test_list_virtual_host_channels() {
 
     let vh_name = "/";
     let result1 = rc.list_channels_in(&vh_name);
-    assert!(
-        result1.is_ok(),
-        "list_channels_in returned {:?}",
-        result1
-    );
+    assert!(result1.is_ok(), "list_channels_in returned {:?}", result1);
 }
