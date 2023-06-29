@@ -116,7 +116,7 @@ fn test_get_permissions() {
 }
 
 #[test]
-fn test_declare_permissions() {
+fn test_grant_permissions() {
     let endpoint = endpoint();
     let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
 
