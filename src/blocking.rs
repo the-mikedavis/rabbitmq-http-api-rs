@@ -482,13 +482,19 @@ impl<'a> Client<'a> {
     pub fn delete_vhost(&self, virtual_host: &str) -> Result<()> {
         let response =
             self.http_delete(&format!("vhosts/{}", self.percent_encode(virtual_host)))?;
-        self.ok_or_status_code_error(response)?;
+        self.ok_or_status_code_error_except_404(response)?;
         Ok(())
     }
 
     pub fn delete_user(&self, username: &str) -> Result<()> {
         let response = self.http_delete(&format!("users/{}", self.percent_encode(username)))?;
-        self.ok_or_status_code_error(response)?;
+        self.ok_or_status_code_error_except_404(response)?;
+        Ok(())
+    }
+
+    pub fn clear_permissions(&self, virtual_host: &str, username: &str) -> Result<()> {
+        let response = self.http_delete(&format!("permissions/{}/{}", self.percent_encode(virtual_host), self.percent_encode(username)))?;
+        self.ok_or_status_code_error_except_404(response)?;
         Ok(())
     }
 
@@ -728,7 +734,7 @@ impl<'a> Client<'a> {
         );
 
         let response = self.http_delete(&path)?;
-        self.ok_or_status_code_error(response)?;
+        self.ok_or_status_code_error_except_404(response)?;
         Ok(())
     }
 
@@ -811,7 +817,7 @@ impl<'a> Client<'a> {
             self.percent_encode(vhost),
             self.percent_encode(name)
         ))?;
-        self.ok_or_status_code_error(response)?;
+        self.ok_or_status_code_error_except_404(response)?;
         Ok(())
     }
 
@@ -851,7 +857,7 @@ impl<'a> Client<'a> {
             ),
             params,
         )?;
-        self.ok_or_status_code_error(response)?;
+        self.ok_or_status_code_error_except_404(response)?;
         Ok(())
     }
 
@@ -861,7 +867,7 @@ impl<'a> Client<'a> {
             self.percent_encode(vhost),
             self.percent_encode(name)
         ))?;
-        self.ok_or_status_code_error(response)?;
+        self.ok_or_status_code_error_except_404(response)?;
         Ok(())
     }
 
@@ -1042,6 +1048,24 @@ impl<'a> Client<'a> {
     fn ok_or_status_code_error(&self, response: HttpClientResponse) -> Result<HttpClientResponse> {
         let status = response.status();
         if status.is_client_error() {
+            return Err(Error::ClientErrorResponse(status.as_u16(), response));
+        }
+
+        if status.is_server_error() {
+            return Err(Error::ServerErrorResponse(status.as_u16(), response));
+        }
+
+        Ok(response)
+    }
+
+    fn ok_or_status_code_error_except_404(
+        &self,
+        response: HttpClientResponse,
+        ) -> Result<HttpClientResponse> {
+        let status = response.status();
+
+        // Do not consider 404s an error to allow for idempotent deletes
+        if status.is_client_error() && status.as_u16() != 404 {
             return Err(Error::ClientErrorResponse(status.as_u16(), response));
         }
 
