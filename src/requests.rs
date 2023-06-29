@@ -1,5 +1,5 @@
 use crate::commons::{ExchangeType, PolicyTarget, QueueType};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 
 #[derive(Serialize)]
@@ -238,9 +238,9 @@ impl<'a> ExchangeParams<'a> {
     }
 }
 
-type RuntimeParameterValue = Map<String, Value>;
+pub type RuntimeParameterValue = Map<String, Value>;
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct RuntimeParameterDefinition {
     pub name: String,
     pub vhost: String,
