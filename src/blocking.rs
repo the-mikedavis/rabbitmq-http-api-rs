@@ -127,6 +127,20 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    pub fn get_connection_info(&self, name: &str) -> Result<responses::Connection> {
+        let response = self.http_get(&format!("connections/{}", self.percent_encode(name)))?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<responses::Connection>()
+            .map_err(Error::from)
+    }
+
+    pub fn close_connection(&self, name: &str) -> Result<()> {
+        let response = self.http_delete(&format!("connections/{}", self.percent_encode(name)))?;
+        let _ = self.ok_or_status_code_error_except_404(response)?;
+        Ok(())
+    }
+
     /// Lists all connections in the given virtual host.
     pub fn list_connections_in(&self, virtual_host: &str) -> Result<Vec<responses::Connection>> {
         let response = self.http_get(&format!(
