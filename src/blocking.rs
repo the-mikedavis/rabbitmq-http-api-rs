@@ -151,6 +151,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists all channels across the cluster.
     pub fn list_channels(&self) -> Result<Vec<responses::Channel>> {
         let response = self.http_get("channels")?;
         let response2 = self.ok_or_status_code_error(response)?;
@@ -159,6 +160,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists all channels in the given virtual host.
     pub fn list_channels_in(&self, virtual_host: &str) -> Result<Vec<responses::Channel>> {
         let response = self.http_get(&format!(
             "vhosts/{}/channels",
@@ -171,6 +173,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists all queues and streams across the cluster.
     pub fn list_queues(&self) -> Result<Vec<responses::QueueInfo>> {
         let response = self.http_get("queues")?;
         let response2 = self.ok_or_status_code_error(response)?;
@@ -179,6 +182,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists all queues and streams in the given virtual host.
     pub fn list_queues_in(&self, virtual_host: &str) -> Result<Vec<responses::QueueInfo>> {
         let response = self.http_get(&format!("queues/{}", self.percent_encode(virtual_host)))?;
         let response2 = self.ok_or_status_code_error(response)?;
@@ -187,6 +191,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists all exchanges across the cluster.
     pub fn list_exchanges(&self) -> Result<Vec<responses::ExchangeInfo>> {
         let response = self.http_get("exchanges")?;
         let response2 = self.ok_or_status_code_error(response)?;
@@ -195,6 +200,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists all exchanges in the given virtual host.
     pub fn list_exchanges_in(&self, virtual_host: &str) -> Result<Vec<responses::ExchangeInfo>> {
         let response =
             self.http_get(&format!("exchanges/{}", self.percent_encode(virtual_host)))?;
@@ -204,6 +210,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists all bindings (both queue-to-exchange and exchange-to-exchange ones) across the cluster.
     pub fn list_bindings(&self) -> Result<Vec<responses::BindingInfo>> {
         let response = self.http_get("bindings")?;
         let response2 = self.ok_or_status_code_error(response)?;
@@ -212,6 +219,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists all bindings (both queue-to-exchange and exchange-to-exchange ones)  in the given virtual host.
     pub fn list_bindings_in(&self, virtual_host: &str) -> Result<Vec<responses::BindingInfo>> {
         let response = self.http_get(&format!("bindings/{}", self.percent_encode(virtual_host)))?;
         let response2 = self.ok_or_status_code_error(response)?;
@@ -220,6 +228,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists all bindings of a specific queue.
     pub fn list_queue_bindings(
         &self,
         virtual_host: &str,
@@ -236,6 +245,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists all bindings of a specific exchange where it is the source.
     pub fn list_exchange_bindings_with_source(
         &self,
         virtual_host: &str,
@@ -248,6 +258,7 @@ impl<'a> Client<'a> {
         )
     }
 
+    /// Lists all bindings of a specific exchange where it is the destination.
     pub fn list_exchange_bindings_with_destination(
         &self,
         virtual_host: &str,
@@ -260,6 +271,7 @@ impl<'a> Client<'a> {
         )
     }
 
+    /// Lists all consumers across the cluster.
     pub fn list_consumers(&self) -> Result<Vec<responses::Consumer>> {
         let response = self.http_get("consumers")?;
         let response2 = self.ok_or_status_code_error(response)?;
@@ -268,6 +280,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Lists all consumers in the given virtual host.
     pub fn list_consumers_in(&self, virtual_host: &str) -> Result<Vec<responses::Consumer>> {
         let response = self.http_get(&format!("consumers/{}", virtual_host))?;
         let response2 = self.ok_or_status_code_error(response)?;
@@ -276,6 +289,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Returns information about a cluster node.
     pub fn get_node_info(&self, name: &str) -> Result<responses::ClusterNode> {
         let response = self.http_get(&format!("nodes/{}", name))?;
         let response2 = self.ok_or_status_code_error(response)?;
@@ -284,6 +298,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Returns information about a virtual host.
     pub fn get_vhost(&self, name: &str) -> Result<responses::VirtualHost> {
         let response = self.http_get(&format!("vhosts/{}", self.percent_encode(name)))?;
         let response2 = self.ok_or_status_code_error(response)?;
@@ -292,12 +307,14 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Returns information about a user in the internal database.
     pub fn get_user(&self, name: &str) -> Result<responses::User> {
         let response = self.http_get(&format!("users/{}", self.percent_encode(name)))?;
         let response2 = self.ok_or_status_code_error(response)?;
         response2.json::<responses::User>().map_err(Error::from)
     }
 
+    /// Returns information about a queue or stream.
     pub fn get_queue_info(&self, virtual_host: &str, name: &str) -> Result<responses::QueueInfo> {
         let response = self.http_get(&format!(
             "queues/{}/{}",
@@ -310,6 +327,7 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Returns information about an exchange.
     pub fn get_exchange_info(
         &self,
         virtual_host: &str,
@@ -326,10 +344,16 @@ impl<'a> Client<'a> {
             .map_err(Error::from)
     }
 
+    /// Creates a virtual host.
+    ///
+    /// See [`VirtualHostParams`]
     pub fn create_vhost(&self, params: &VirtualHostParams) -> Result<()> {
         self.update_vhost(params)
     }
 
+    /// Creates a virtual host or updates metadata of an existing one.
+    ///
+    /// See [`VirtualHostParams`]
     pub fn update_vhost(&self, params: &VirtualHostParams) -> Result<()> {
         let response = self.http_put(
             &format!("vhosts/{}", self.percent_encode(params.name)),
@@ -339,6 +363,9 @@ impl<'a> Client<'a> {
         Ok(())
     }
 
+    /// Adds a user to the internal database.
+    ///
+    /// See [`UserParams`] and [`crate::password_hashing`].
     pub fn create_user(&self, params: &UserParams) -> Result<()> {
         let response = self.http_put(
             &format!("users/{}", self.percent_encode(params.name)),
