@@ -142,9 +142,7 @@ impl<'a> Client<'a> {
 
     pub fn close_connection(&self, name: &str, reason: Option<&str>) -> Result<()> {
         let response: HttpClientResponse = match reason {
-            None => {
-                self.http_delete(&format!("connections/{}", self.percent_encode(name)))?
-            },
+            None => self.http_delete(&format!("connections/{}", self.percent_encode(name)))?,
             Some(value) => {
                 let mut headers = HeaderMap::new();
                 let hdr = HeaderValue::from_str(value)?;
