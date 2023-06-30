@@ -28,7 +28,7 @@ fn test_list_permissions() {
             write: ".*".to_owned(),
         }));
 
-    let _ = rc.delete_vhost(vh_params.name).unwrap();
+    rc.delete_vhost(vh_params.name).unwrap();
 }
 
 #[test]
@@ -54,7 +54,7 @@ fn test_list_permissions_in() {
             write: ".*".to_owned(),
         }));
 
-    let _ = rc.delete_vhost(vh_params.name).unwrap();
+    rc.delete_vhost(vh_params.name).unwrap();
 }
 
 #[test]
@@ -80,7 +80,7 @@ fn test_list_permissions_of() {
             write: ".*".to_owned(),
         }));
 
-    let _ = rc.delete_vhost(vh_params.name).unwrap();
+    rc.delete_vhost(vh_params.name).unwrap();
 }
 
 #[test]
@@ -112,7 +112,7 @@ fn test_get_permissions() {
         }
     );
 
-    let _ = rc.delete_vhost(vh_params.name).unwrap();
+    rc.delete_vhost(vh_params.name).unwrap();
 }
 
 #[test]
@@ -127,7 +127,7 @@ fn test_grant_permissions() {
 
     let params = Permissions {
         user: "guest",
-        vhost: &vh_params.name,
+        vhost: vh_params.name,
         configure: "configure",
         read: "read",
         write: "write",
@@ -135,7 +135,7 @@ fn test_grant_permissions() {
     let result = rc.declare_permissions(&params);
     assert!(result.is_ok(), "declare_permissions returned {:?}", result);
 
-    let result2 = rc.get_permissions(&vh_params.name, "guest");
+    let result2 = rc.get_permissions(vh_params.name, "guest");
     assert!(result2.is_ok(), "get_permissions_of returned {:?}", result2);
 
     let result3 = result2.unwrap();
@@ -150,12 +150,12 @@ fn test_grant_permissions() {
         }
     );
 
-    let result4 = rc.grant_permissions(&vh_params.name, "guest");
+    let result4 = rc.grant_permissions(vh_params.name, "guest");
     assert!(result4.is_ok(), "delete_permissions returned {:?}", result4);
 
-    let result5 = rc.get_permissions(&vh_params.name, "guest");
+    let result5 = rc.get_permissions(vh_params.name, "guest");
     assert!(result5.is_err(), "permissions found after deletion");
 
-    let _ = rc.clear_permissions(&vh_params.name, "guest").unwrap();
-    let _ = rc.delete_vhost(vh_params.name).unwrap();
+    rc.clear_permissions(vh_params.name, "guest").unwrap();
+    rc.delete_vhost(vh_params.name).unwrap();
 }

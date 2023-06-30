@@ -141,22 +141,20 @@ impl<'a> Client<'a> {
     }
 
     pub fn close_connection(&self, name: &str, reason: Option<&str>) -> Result<()> {
-        let response: HttpClientResponse;
-        match reason {
+        let response: HttpClientResponse = match reason {
             None => {
-                response =
-                    self.http_delete(&format!("connections/{}", self.percent_encode(name)))?;
-            }
+                self.http_delete(&format!("connections/{}", self.percent_encode(name)))?
+            },
             Some(value) => {
                 let mut headers = HeaderMap::new();
                 let hdr = HeaderValue::from_str(value)?;
                 headers.insert("X-Reason", hdr);
-                response = self.http_delete_with_headers(
+                self.http_delete_with_headers(
                     &format!("connections/{}", self.percent_encode(name)),
                     headers,
-                )?;
+                )?
             }
-        }
+        };
         let _ = self.ok_or_status_code_error_except_404(response)?;
         Ok(())
     }
