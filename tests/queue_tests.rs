@@ -7,7 +7,7 @@ use crate::common::{endpoint, PASSWORD, USERNAME};
 #[test]
 fn test_declare_a_quorum_queue() {
     let endpoint = endpoint();
-    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
     let vhost = "/";
     let name = "rust.tests.qq.182374982374";
 
@@ -29,7 +29,7 @@ fn test_declare_a_quorum_queue() {
 #[test]
 fn test_declare_a_stream() {
     let endpoint = endpoint();
-    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
     let vhost = "/";
     let name = "rust.tests.qq.927348926347988623";
 
@@ -51,7 +51,7 @@ fn test_declare_a_stream() {
 #[test]
 fn test_delete_queue() {
     let endpoint = endpoint();
-    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
     let vhost = "/";
     let name = "rust.tests.cq.982734982364982364896";
 
@@ -72,7 +72,7 @@ fn test_delete_queue() {
 #[test]
 fn test_list_all_queues() {
     let endpoint = endpoint();
-    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
 
     let vh_name = "/";
 
@@ -91,7 +91,7 @@ fn test_list_all_queues() {
 #[test]
 fn test_list_queues_in_a_virtual_host() {
     let endpoint = endpoint();
-    let rc = Client::new_with_basic_auth_credentials(&endpoint, USERNAME, PASSWORD);
+    let rc = Client::new(&endpoint).with_basic_auth_credentials(USERNAME, PASSWORD);
 
     let vh_name = "/";
 
