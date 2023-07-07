@@ -117,15 +117,17 @@ impl<'a> Client<'a> {
     ///
     /// Example
     /// ```rust
-    /// use rabbitmq_http_client::blocking::Client;
-    ///
+    /// # use rabbitmq_http_client::blocking::Client;
+    /// # use std::fs::File;
+    /// # use std::io::Read;
+    /// # fn call() -> Result<(), Box<dyn std::error::Error>> {
     /// let endpoint = "http://localhost:15672/api/";
     /// let mut buf = Vec::new();
-    /// File::open("ca_certificate.pem")
-    ///     .unwrap()
-    ///     .read_to_end(&mut buf)
-    ///     .unwrap();
-    /// let rc = Client::new(&endpoint).with_pem_ca_certificate(buf)?.list_nodes();
+    /// File::open("ca_certificate.pem")?.read_to_end(&mut buf)?;
+    /// let rc = Client::new(&endpoint).with_pem_ca_certificate(buf);
+    /// # drop(call);
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn with_pem_ca_certificate(mut self, ca_certificate: Vec<u8>) -> Result<Self> {
         self.ca_certificate = Some(reqwest::Certificate::from_pem(&ca_certificate)?);
