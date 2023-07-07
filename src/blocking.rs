@@ -113,7 +113,7 @@ impl<'a> Client<'a> {
         self
     }
 
-    /// Configures a custom CA Certificate for TLS validation.
+    /// Configures a custom CA Certificate for TLS peer certificate chain verification.
     ///
     /// Example
     /// ```rust
@@ -134,16 +134,16 @@ impl<'a> Client<'a> {
         Ok(self)
     }
 
-    /// Configures a custom CA Certificate for TLS validation.
+    /// Configures a custom CA Certificate for TLS peer certificate chain verification.
     ///
     /// Example
     /// ```rust
     /// use rabbitmq_http_client::blocking::Client;
     ///
     /// let endpoint = "http://localhost:15672/api/";
-    /// let rc = Client::new(&endpoint).without_tls_validation().list_nodes();
+    /// let rc = Client::new(&endpoint).without_tls_peer_verification().list_nodes();
     /// ```
-    pub fn without_tls_validation(mut self) -> Self {
+    pub fn without_tls_peer_verification(mut self) -> Self {
         self.skip_tls_peer_verification = true;
         self
     }
