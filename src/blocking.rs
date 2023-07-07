@@ -10,6 +10,7 @@ use percent_encoding::{utf8_percent_encode, NON_ALPHANUMERIC};
 use reqwest::{
     blocking::Client as HttpClient,
     header::{HeaderMap, HeaderValue, InvalidHeaderValue},
+    tls,
 };
 use serde::Serialize;
 use serde_json::{json, Map, Value};
@@ -58,7 +59,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// let endpoint = "http://localhost:15672/api/";
 /// let username = "username";
 /// let password = "password";
-/// let rc = Client::new_with_basic_auth_credentials(&endpoint, &username, &password);
+/// let rc = Client::new(&endpoint).with_basic_auth_credentials(&username, &password);
 /// // list cluster nodes
 /// rc.list_nodes();
 /// // list user connections
@@ -70,10 +71,32 @@ pub struct Client<'a> {
     endpoint: &'a str,
     username: &'a str,
     password: &'a str,
+    ca_certificate: Option<reqwest::Certificate>,
+    skip_tls_peer_verification: bool,
 }
 
 impl<'a> Client<'a> {
-    /// Instantiates a client that will use Basic HTTP Auth for authentication.
+    /// Instantiates a client for the specified endpoint.
+    /// Credentials default to guest/guest.
+    ///
+    /// Example
+    /// ```rust
+    /// use rabbitmq_http_client::blocking::Client;
+    ///
+    /// let endpoint = "http://localhost:15672/api/";
+    /// let rc = Client::new(&endpoint);
+    /// ```
+    pub fn new(endpoint: &'a str) -> Self {
+        Self {
+            endpoint,
+            username: "guest",
+            password: "guest",
+            ca_certificate: None,
+            skip_tls_peer_verification: false,
+        }
+    }
+
+    /// Configures basic HTTP Auth for authentication.
     ///
     /// Example
     /// ```rust
@@ -82,18 +105,47 @@ impl<'a> Client<'a> {
     /// let endpoint = "http://localhost:15672/api/";
     /// let username = "username";
     /// let password = "password";
-    /// let rc = Client::new_with_basic_auth_credentials(&endpoint, &username, &password);
+    /// let rc = Client::new(&endpoint).with_basic_auth_credentials(&username, &password);
     /// ```
-    pub fn new_with_basic_auth_credentials(
-        endpoint: &'a str,
-        username: &'a str,
-        password: &'a str,
-    ) -> Self {
-        Self {
-            endpoint,
-            username,
-            password,
-        }
+    pub fn with_basic_auth_credentials(mut self, username: &'a str, password: &'a str) -> Self {
+        self.username = username;
+        self.password = password;
+        self
+    }
+
+    /// Configures a custom CA Certificate for TLS validation.
+    ///
+    /// Example
+    /// ```rust
+    /// # use rabbitmq_http_client::blocking::Client;
+    /// # use std::fs::File;
+    /// # use std::io::Read;
+    /// # fn call() -> Result<(), Box<dyn std::error::Error>> {
+    /// let endpoint = "http://localhost:15672/api/";
+    /// let mut buf = Vec::new();
+    /// File::open("ca_certificate.pem")?.read_to_end(&mut buf)?;
+    /// let rc = Client::new(&endpoint).with_pem_ca_certificate(buf);
+    /// # drop(call);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn with_pem_ca_certificate(mut self, ca_certificate: Vec<u8>) -> Result<Self> {
+        self.ca_certificate = Some(reqwest::Certificate::from_pem(&ca_certificate)?);
+        Ok(self)
+    }
+
+    /// Configures a custom CA Certificate for TLS validation.
+    ///
+    /// Example
+    /// ```rust
+    /// use rabbitmq_http_client::blocking::Client;
+    ///
+    /// let endpoint = "http://localhost:15672/api/";
+    /// let rc = Client::new(&endpoint).without_tls_validation().list_nodes();
+    /// ```
+    pub fn without_tls_validation(mut self) -> Self {
+        self.skip_tls_peer_verification = true;
+        self
     }
 
     /// Lists cluster nodes.
@@ -1027,7 +1079,8 @@ impl<'a> Client<'a> {
     }
 
     fn http_get(&self, path: &str) -> crate::blocking::Result<HttpClientResponse> {
-        let response = HttpClient::new()
+        let response = self
+            .http_client()
             .get(self.rooted_path(path))
             .basic_auth(self.username, Some(self.password))
             .send();
@@ -1039,7 +1092,8 @@ impl<'a> Client<'a> {
     where
         T: Serialize,
     {
-        let response = HttpClient::new()
+        let response = self
+            .http_client()
             .put(self.rooted_path(path))
             .json(&payload)
             .basic_auth(self.username, Some(self.password))
@@ -1052,7 +1106,8 @@ impl<'a> Client<'a> {
     where
         T: Serialize,
     {
-        let response = HttpClient::new()
+        let response = self
+            .http_client()
             .post(self.rooted_path(path))
             .json(&payload)
             .basic_auth(self.username, Some(self.password))
@@ -1062,7 +1117,8 @@ impl<'a> Client<'a> {
     }
 
     fn http_delete(&self, path: &str) -> crate::blocking::Result<HttpClientResponse> {
-        let response = HttpClient::new()
+        let response = self
+            .http_client()
             .delete(self.rooted_path(path))
             .basic_auth(self.username, Some(self.password))
             .send();
@@ -1074,7 +1130,8 @@ impl<'a> Client<'a> {
         path: &str,
         headers: HeaderMap,
     ) -> crate::blocking::Result<HttpClientResponse> {
-        let response = HttpClient::new()
+        let response = self
+            .http_client()
             .delete(self.rooted_path(path))
             .basic_auth(self.username, Some(self.password))
             .headers(headers)
@@ -1123,6 +1180,27 @@ impl<'a> Client<'a> {
         Ok(response)
     }
 
+    fn http_client(&self) -> HttpClient {
+        let mut builder = HttpClient::builder();
+
+        if self.endpoint.starts_with("https://") {
+            builder = builder
+                .use_rustls_tls()
+                .min_tls_version(tls::Version::TLS_1_2)
+                .max_tls_version(tls::Version::TLS_1_3);
+
+            if self.skip_tls_peer_verification {
+                builder = builder.danger_accept_invalid_certs(true);
+            };
+
+            if let Some(cert) = &self.ca_certificate {
+                builder = builder.add_root_certificate(cert.clone());
+            }
+        }
+
+        builder.build().unwrap()
+    }
+
     fn ok_or_status_code_error_except_503(
         &self,
         response: HttpClientResponse,
@@ -1143,6 +1221,18 @@ impl<'a> Client<'a> {
 
     fn rooted_path(&self, path: &str) -> String {
         format!("{}/{}", self.endpoint, path)
+    }
+}
+
+impl<'a> Default for Client<'a> {
+    fn default() -> Self {
+        Self {
+            endpoint: "http://localhost:15672",
+            username: "guest",
+            password: "guest",
+            ca_certificate: None,
+            skip_tls_peer_verification: false,
+        }
     }
 }
 
