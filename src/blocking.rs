@@ -72,7 +72,7 @@ pub struct Client<'a> {
     username: &'a str,
     password: &'a str,
     ca_certificate: Option<reqwest::Certificate>,
-    skip_tls_validation: bool,
+    skip_tls_peer_verification: bool,
 }
 
 impl<'a> Client<'a> {
@@ -92,7 +92,7 @@ impl<'a> Client<'a> {
             username: "guest",
             password: "guest",
             ca_certificate: None,
-            skip_tls_validation: false,
+            skip_tls_peer_verification: false,
         }
     }
 
@@ -144,7 +144,7 @@ impl<'a> Client<'a> {
     /// let rc = Client::new(&endpoint).without_tls_validation().list_nodes();
     /// ```
     pub fn without_tls_validation(mut self) -> Self {
-        self.skip_tls_validation = true;
+        self.skip_tls_peer_verification = true;
         self
     }
 
@@ -1189,7 +1189,7 @@ impl<'a> Client<'a> {
                 .min_tls_version(tls::Version::TLS_1_2)
                 .max_tls_version(tls::Version::TLS_1_3);
 
-            if self.skip_tls_validation {
+            if self.skip_tls_peer_verification {
                 builder = builder.danger_accept_invalid_certs(true);
             };
 
@@ -1231,7 +1231,7 @@ impl<'a> Default for Client<'a> {
             username: "guest",
             password: "guest",
             ca_certificate: None,
-            skip_tls_validation: false,
+            skip_tls_peer_verification: false,
         }
     }
 }
