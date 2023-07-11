@@ -214,33 +214,46 @@ pub struct QueueInfo {
     pub arguments: XArguments,
 
     pub node: String,
+    #[serde(default)]
     pub state: String,
     // only quorum queues and streams will have this
     pub leader: Option<String>,
     pub members: Option<Vec<String>>,
     pub online: Option<Vec<String>>,
 
+    #[serde(default)]
     pub memory: u64,
     #[serde(rename(deserialize = "consumers"))]
+    #[serde(default)]
     pub consumer_count: u16,
+    #[serde(default)]
     pub consumer_utilisation: f32,
     pub exclusive_consumer_tag: Option<String>,
 
     pub policy: Option<String>,
 
+    #[serde(default)]
     pub message_bytes: u64,
+    #[serde(default)]
     pub message_bytes_persistent: u64,
+    #[serde(default)]
     pub message_bytes_ram: u64,
+    #[serde(default)]
     pub message_bytes_ready: u64,
+    #[serde(default)]
     pub message_bytes_unacknowledged: u64,
 
     #[serde(rename(deserialize = "messages"))]
+    #[serde(default)]
     pub message_count: u64,
     #[serde(rename(deserialize = "messages_persistent"))]
+    #[serde(default)]
     pub on_disk_message_count: u64,
     #[serde(rename(deserialize = "messages_ram"))]
+    #[serde(default)]
     pub in_memory_message_count: u64,
     #[serde(rename(deserialize = "messages_unacknowledged"))]
+    #[serde(default)]
     pub unacknowledged_message_count: u64,
 }
 
