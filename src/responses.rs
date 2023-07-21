@@ -92,6 +92,7 @@ pub struct Connection {
     pub channel_max: u16,
     /// How many channels are opened on this connection.
     #[serde(rename(deserialize = "channels"))]
+    #[serde(default)]
     pub channel_count: u16,
     /// Client-provided properties (metadata and capabilities).
     pub client_properties: ClientProperties,
@@ -100,9 +101,13 @@ pub struct Connection {
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClientProperties {
+    #[serde(default)]
     pub connection_name: String,
+    #[serde(default)]
     pub platform: String,
+    #[serde(default)]
     pub product: String,
+    #[serde(default)]
     pub version: String,
     #[serde(default)]
     pub capabilities: ClientCapabilities,
