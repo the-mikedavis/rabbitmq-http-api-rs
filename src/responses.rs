@@ -104,10 +104,11 @@ pub struct ClientProperties {
     pub platform: String,
     pub product: String,
     pub version: String,
+    #[serde(default)]
     pub capabilities: ClientCapabilities,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Default)]
 #[allow(dead_code)]
 pub struct ClientCapabilities {
     pub authentication_failure_close: bool,
