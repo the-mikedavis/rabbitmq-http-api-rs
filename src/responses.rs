@@ -3,7 +3,7 @@ use serde::Deserialize;
 use serde_aux::prelude::*;
 use serde_json::Map;
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Default)]
 #[allow(dead_code)]
 pub struct VirtualHostMetadata {
     /// Optional tags

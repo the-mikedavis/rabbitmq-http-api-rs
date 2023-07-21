@@ -1009,6 +1009,21 @@ impl<'a> Client<'a> {
     }
 
     //
+    // Definitions
+
+    pub fn export_definitions(&self) -> Result<String> {
+        let response = self.http_get("definitions")?;
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2.text().map_err(Error::from)
+    }
+
+    pub fn import_definitions(&self, definitions: Value) -> Result<()> {
+        let response = self.http_post("definitions", &definitions)?;
+        self.ok_or_status_code_error(response)?;
+        Ok(())
+    }
+
+    //
     // Health Checks
     //
 
