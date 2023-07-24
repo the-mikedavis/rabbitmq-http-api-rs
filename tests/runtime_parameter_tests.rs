@@ -1,4 +1,5 @@
-use rabbitmq_http_client::requests::RuntimeParameterDefinition;
+use rabbitmq_http_client::requests::{RuntimeParameterDefinition, RuntimeParameterValue};
+use rabbitmq_http_client::responses::RuntimeParameter;
 use rabbitmq_http_client::{blocking::Client, requests::VirtualHostParams};
 use serde_json::{json, Map, Value};
 
@@ -66,6 +67,28 @@ fn test_clear_runtime_parameter() {
         .any(|p| p.component == "vhost-limits" && p.vhost == *vh_params.name));
 
     let _ = rc.delete_vhost(vh_params.name);
+}
+
+#[test]
+fn test_deserialize_sequence_value() {
+    let json = r#"
+      {
+        "name": "my_param",
+        "vhost": "test",
+        "component": "limits",
+        "value": []
+      }
+    "#;
+
+    let param: RuntimeParameter = serde_json::from_str(json).unwrap();
+
+    assert_eq!(param.name, "my_param");
+    assert_eq!(param.vhost, "test");
+    assert_eq!(param.component, "limits");
+
+    let expected_value: RuntimeParameterValue = serde_json::Map::new();
+
+    assert_eq!(param.value, expected_value);
 }
 
 //

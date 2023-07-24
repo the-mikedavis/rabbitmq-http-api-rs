@@ -1,5 +1,10 @@
+use std::fmt;
+
 use crate::commons::{BindingDestinationType, PolicyTarget};
-use serde::Deserialize;
+use serde::{
+    de::{MapAccess, Visitor},
+    Deserialize, Deserializer,
+};
 use serde_aux::prelude::*;
 use serde_json::Map;
 
@@ -310,7 +315,7 @@ pub struct ClusterNode {
     pub rates_mode: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 #[allow(dead_code)]
 pub struct RuntimeParameter {
     pub name: String,
@@ -380,4 +385,78 @@ pub struct QuorumEndangeredQueue {
     pub vhost: String,
     #[serde(rename(deserialize = "type"))]
     pub queue_type: String,
+}
+
+struct RuntimeParameterVisitor;
+
+impl<'de> Visitor<'de> for RuntimeParameterVisitor {
+    type Value = RuntimeParameter;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("a runtime parameter")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: MapAccess<'de>,
+    {
+        let mut name = None;
+        let mut vhost = None;
+        let mut component = None;
+        let mut value = serde_json::Map::new();
+
+        while let Some(key) = map.next_key()? {
+            match key {
+                "name" => {
+                    if name.is_some() {
+                        return Err(serde::de::Error::duplicate_field("name"));
+                    }
+                    name = Some(map.next_value()?);
+                }
+                "vhost" => {
+                    if vhost.is_some() {
+                        return Err(serde::de::Error::duplicate_field("vhost"));
+                    }
+                    vhost = Some(map.next_value()?);
+                }
+                "component" => {
+                    if component.is_some() {
+                        return Err(serde::de::Error::duplicate_field("component"));
+                    }
+                    component = Some(map.next_value()?);
+                }
+                "value" => {
+                    // Always deserialize "value" as a map, even if it is a sequence
+                    if let serde_json::Value::Object(val) = map.next_value()? {
+                        value = val;
+                    } else {
+                        value = Map::new();
+                    }
+                }
+                _ => {
+                    return Err(serde::de::Error::duplicate_field("component")); // TODO
+                }
+            }
+        }
+
+        let name = name.ok_or_else(|| serde::de::Error::missing_field("name"))?;
+        let vhost = vhost.ok_or_else(|| serde::de::Error::missing_field("vhost"))?;
+        let component = component.ok_or_else(|| serde::de::Error::missing_field("component"))?;
+
+        Ok(RuntimeParameter {
+            name,
+            vhost,
+            component,
+            value,
+        })
+    }
+}
+
+impl<'de> Deserialize<'de> for RuntimeParameter {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_map(RuntimeParameterVisitor)
+    }
 }
