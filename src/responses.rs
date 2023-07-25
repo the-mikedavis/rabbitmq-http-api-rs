@@ -1,32 +1,77 @@
+use std::fmt;
+
 use crate::commons::{BindingDestinationType, PolicyTarget};
 use serde::Deserialize;
 use serde_aux::prelude::*;
 use serde_json::Map;
+use tabled::Tabled;
+
+fn fmt_list(&mut f: &mut fmt::Formatter<'_>, xs: &Vec<String>) -> fmt::Result {
+    match xs.len() {
+        0 => {
+            write!(f, "[]")
+        },
+        n => {
+            write!(f, "[")?;
+            let last_element = xs.pop().unwrap();
+            for elem in xs {
+                write!(f, "{}, ", elem)?;
+            }
+            write!(f, "{}", last_element)?;
+            write!(f, "]")?;
+            Ok(())
+        }
+    }
+}
+
+fn display_option<T>(opt: &Option<T>) -> String
+where T: fmt::Display {
+    match opt {
+        None => "".to_owned(),
+        Some(val) => format!("{}", val).to_owned()
+    }
+}
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct TagList(pub Vec<String>);
+
+impl fmt::Display for TagList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt_list(f, &self.0)
+    }
+}
+
+
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct VirtualHostMetadata {
     /// Optional tags
-    pub tags: Option<Vec<String>>,
+    #[tabled(display_with = "display_option")]
+    pub tags: Option<TagList>,
     /// Optional description
+    #[tabled(display_with = "display_option")]
     pub description: Option<String>,
     /// Default queue type used in this virtual host when clients
     /// do not explicitly specify one
+    #[tabled(display_with = "display_option")]
     pub default_queue_type: Option<String>,
 }
 
 /// Represents a [RabbitMQ virtual host](https://rabbitmq.com/vhosts.html).
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct VirtualHost {
     /// Virtual host name
     pub name: String,
     /// Optional tags
-    pub tags: Option<Vec<String>>,
+    #[tabled(display_with = "display_option")]
+    pub tags: Option<TagList>,
     /// Optional description
+    #[tabled(display_with = "display_option")]
     pub description: Option<String>,
     /// Default queue type used in this virtual host when clients
     /// do not explicitly specify one
+    #[tabled(display_with = "display_option")]
     pub default_queue_type: Option<String>,
     /// All virtual host metadata combined
     pub metadata: VirtualHostMetadata,
@@ -34,7 +79,7 @@ pub struct VirtualHost {
 
 pub type EnforcedLimits = Map<String, serde_json::Value>;
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct VirtualHostLimits {
     pub vhost: String,
@@ -42,7 +87,7 @@ pub struct VirtualHostLimits {
     pub limits: EnforcedLimits,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct UserLimits {
     #[serde(rename(deserialize = "user"))]
@@ -51,16 +96,16 @@ pub struct UserLimits {
     pub limits: EnforcedLimits,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct User {
     pub name: String,
-    pub tags: Vec<String>,
+    pub tags: TagList,
     pub password_hash: String,
 }
 
 /// Represents a client connection.
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct Connection {
     /// Connection name. Use it to close this connection.
@@ -97,7 +142,7 @@ pub struct Connection {
     pub client_properties: ClientProperties,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct ClientProperties {
     pub connection_name: String,
@@ -107,7 +152,7 @@ pub struct ClientProperties {
     pub capabilities: ClientCapabilities,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct ClientCapabilities {
     pub authentication_failure_close: bool,
@@ -122,7 +167,7 @@ pub struct ClientCapabilities {
     pub publisher_confirms: bool,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct UserConnection {
     pub name: String,
@@ -132,7 +177,7 @@ pub struct UserConnection {
     pub vhost: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct Channel {
     #[serde(rename(deserialize = "number"))]
@@ -149,7 +194,7 @@ pub struct Channel {
     pub messages_unconfirmed: u32,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct ConnectionDetails {
     pub name: String,
@@ -159,7 +204,7 @@ pub struct ConnectionDetails {
     pub client_port: u32,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct ChannelDetails {
     #[serde(rename(deserialize = "number"))]
@@ -175,7 +220,7 @@ pub struct ChannelDetails {
     pub username: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct Consumer {
     pub consumer_tag: String,
@@ -191,7 +236,7 @@ pub struct Consumer {
     pub channel_details: ChannelDetails,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct NameAndVirtualHost {
     pub name: String,
@@ -202,6 +247,15 @@ pub type XArguments = Map<String, serde_json::Value>;
 pub type RuntimeParameterValue = Map<String, serde_json::Value>;
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct NodeList(Vec<String>);
+
+impl fmt::Display for NodeList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt_list(f, &self.0)
+    }
+}
+
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct QueueInfo {
     pub name: String,
@@ -216,14 +270,18 @@ pub struct QueueInfo {
     pub node: String,
     pub state: String,
     // only quorum queues and streams will have this
+    #[tabled(display_with = "display_option")]
     pub leader: Option<String>,
-    pub members: Option<Vec<String>>,
-    pub online: Option<Vec<String>>,
+    #[tabled(display_with = "display_option")]
+    pub members: Option<NodeList>,
+    #[tabled(display_with = "display_option")]
+    pub online: Option<NodeList>,
 
     pub memory: u64,
     #[serde(rename(deserialize = "consumers"))]
     pub consumer_count: u16,
     pub consumer_utilisation: f32,
+    #[tabled(display_with = "display_option")]
     pub exclusive_consumer_tag: Option<String>,
 
     pub policy: Option<String>,
@@ -244,7 +302,7 @@ pub struct QueueInfo {
     pub unacknowledged_message_count: u64,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct ExchangeInfo {
     pub name: String,
@@ -256,7 +314,7 @@ pub struct ExchangeInfo {
     pub arguments: XArguments,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct BindingInfo {
     pub vhost: String,
@@ -268,7 +326,7 @@ pub struct BindingInfo {
     pub properties_key: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct ClusterNode {
     pub name: String,
@@ -292,7 +350,7 @@ pub struct ClusterNode {
     pub rates_mode: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct RuntimeParameter {
     pub name: String,
@@ -301,7 +359,7 @@ pub struct RuntimeParameter {
     pub value: RuntimeParameterValue,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct ClusterIdentity {
     pub name: String,
@@ -309,7 +367,7 @@ pub struct ClusterIdentity {
 
 pub type PolicyDefinition = Option<Map<String, serde_json::Value>>;
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct Policy {
     pub name: String,
