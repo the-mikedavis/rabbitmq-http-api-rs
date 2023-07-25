@@ -1,5 +1,10 @@
+use std::fmt;
+
 use crate::commons::{BindingDestinationType, PolicyTarget};
-use serde::Deserialize;
+use serde::{
+    de::{MapAccess, Visitor},
+    Deserialize,
+};
 use serde_aux::prelude::*;
 use serde_json::Map;
 
@@ -310,13 +315,49 @@ pub struct ClusterNode {
     pub rates_mode: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
-#[allow(dead_code)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct RuntimeParameter {
     pub name: String,
     pub vhost: String,
     pub component: String,
+    #[serde(deserialize_with = "deserialize_runtime_parameter_value")]
     pub value: RuntimeParameterValue,
+}
+
+fn deserialize_runtime_parameter_value<'de, D>(
+    deserializer: D,
+) -> Result<Map<String, serde_json::Value>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    struct RuntimeParameterValueVisitor;
+
+    impl<'de> Visitor<'de> for RuntimeParameterValueVisitor {
+        type Value = RuntimeParameterValue;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("a runtime parameter")
+        }
+
+        fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
+        where
+            A: serde::de::SeqAccess<'de>,
+        {
+            // Always deserialize the value as a map, even if the server
+            // sends a sequence.
+            Ok(Map::new())
+        }
+
+        fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
+        where
+            A: MapAccess<'de>,
+        {
+            let deserializer = serde::de::value::MapAccessDeserializer::new(map);
+            Deserialize::deserialize(deserializer)
+        }
+    }
+
+    deserializer.deserialize_any(RuntimeParameterValueVisitor)
 }
 
 #[derive(Debug, Deserialize, Clone)]
