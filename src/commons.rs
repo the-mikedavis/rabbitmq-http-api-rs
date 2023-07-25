@@ -1,3 +1,5 @@
+use std::fmt;
+use std::fmt::Formatter;
 use serde::{Deserialize, Serialize};
 
 /// Exchange types. Most variants are for exchange types included with modern RabbitMQ distributions.
@@ -122,6 +124,21 @@ impl From<QueueType> for String {
 pub enum BindingDestinationType {
     Queue,
     Exchange,
+}
+
+impl fmt::Display for BindingDestinationType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            BindingDestinationType::Queue => {
+                write!(f, "{}", "queue")?
+            },
+            BindingDestinationType::Exchange => {
+                write!(f, "{}", "exchange")?
+            }
+        };
+
+        Ok(())
+    }
 }
 
 impl BindingDestinationType {

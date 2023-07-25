@@ -6,14 +6,14 @@ use serde_aux::prelude::*;
 use serde_json::Map;
 use tabled::Tabled;
 
-fn fmt_list(&mut f: &mut fmt::Formatter<'_>, xs: &Vec<String>) -> fmt::Result {
+fn fmt_list(f: &mut fmt::Formatter<'_>, xs: &Vec<String>) -> fmt::Result {
     match xs.len() {
         0 => {
             write!(f, "[]")
         },
-        n => {
+        _ => {
             write!(f, "[")?;
-            let last_element = xs.pop().unwrap();
+            let last_element = xs.clone().pop().unwrap();
             for elem in xs {
                 write!(f, "{}, ", elem)?;
             }
@@ -41,19 +41,28 @@ impl fmt::Display for TagList {
     }
 }
 
+pub type XArguments = Map<String, serde_json::Value>;
+pub type RuntimeParameterValue = Map<String, serde_json::Value>;
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
+pub struct NodeList(Vec<String>);
+
+impl fmt::Display for NodeList {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt_list(f, &self.0)
+    }
+}
+
+
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct VirtualHostMetadata {
     /// Optional tags
-    #[tabled(display_with = "display_option")]
     pub tags: Option<TagList>,
     /// Optional description
-    #[tabled(display_with = "display_option")]
     pub description: Option<String>,
     /// Default queue type used in this virtual host when clients
     /// do not explicitly specify one
-    #[tabled(display_with = "display_option")]
     pub default_queue_type: Option<String>,
 }
 
@@ -74,12 +83,13 @@ pub struct VirtualHost {
     #[tabled(display_with = "display_option")]
     pub default_queue_type: Option<String>,
     /// All virtual host metadata combined
+    #[tabled(skip)]
     pub metadata: VirtualHostMetadata,
 }
 
 pub type EnforcedLimits = Map<String, serde_json::Value>;
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct VirtualHostLimits {
     pub vhost: String,
@@ -87,7 +97,7 @@ pub struct VirtualHostLimits {
     pub limits: EnforcedLimits,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct UserLimits {
     #[serde(rename(deserialize = "user"))]
@@ -139,10 +149,11 @@ pub struct Connection {
     #[serde(rename(deserialize = "channels"))]
     pub channel_count: u16,
     /// Client-provided properties (metadata and capabilities).
+    #[tabled(skip)]
     pub client_properties: ClientProperties,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClientProperties {
     pub connection_name: String,
@@ -152,7 +163,7 @@ pub struct ClientProperties {
     pub capabilities: ClientCapabilities,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClientCapabilities {
     pub authentication_failure_close: bool,
@@ -183,6 +194,7 @@ pub struct Channel {
     #[serde(rename(deserialize = "number"))]
     pub id: u32,
     pub name: String,
+    #[tabled(skip)]
     pub connection_details: ConnectionDetails,
     pub vhost: String,
     pub state: String,
@@ -194,7 +206,7 @@ pub struct Channel {
     pub messages_unconfirmed: u32,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ConnectionDetails {
     pub name: String,
@@ -204,7 +216,7 @@ pub struct ConnectionDetails {
     pub client_port: u32,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ChannelDetails {
     #[serde(rename(deserialize = "number"))]
@@ -229,30 +241,21 @@ pub struct Consumer {
     pub manual_ack: bool,
     pub prefetch_count: u32,
     pub exclusive: bool,
+    #[tabled(skip)]
     pub arguments: XArguments,
     #[serde(rename(deserialize = "consumer_timeout"))]
     pub delivery_ack_timeout: u64,
+    #[tabled(skip)]
     pub queue: NameAndVirtualHost,
+    #[tabled(skip)]
     pub channel_details: ChannelDetails,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct NameAndVirtualHost {
     pub name: String,
     pub vhost: String,
-}
-
-pub type XArguments = Map<String, serde_json::Value>;
-pub type RuntimeParameterValue = Map<String, serde_json::Value>;
-
-#[derive(Debug, Deserialize, Clone)]
-pub struct NodeList(Vec<String>);
-
-impl fmt::Display for NodeList {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt_list(f, &self.0)
-    }
 }
 
 #[derive(Debug, Deserialize, Clone, Tabled)]
@@ -265,6 +268,7 @@ pub struct QueueInfo {
     pub durable: bool,
     pub auto_delete: bool,
     pub exclusive: bool,
+    #[tabled(skip)]
     pub arguments: XArguments,
 
     pub node: String,
@@ -284,6 +288,7 @@ pub struct QueueInfo {
     #[tabled(display_with = "display_option")]
     pub exclusive_consumer_tag: Option<String>,
 
+    #[tabled(display_with = "display_option")]
     pub policy: Option<String>,
 
     pub message_bytes: u64,
@@ -311,6 +316,7 @@ pub struct ExchangeInfo {
     pub exchange_type: String,
     pub durable: bool,
     pub auto_delete: bool,
+    #[tabled(skip)]
     pub arguments: XArguments,
 }
 
@@ -322,6 +328,7 @@ pub struct BindingInfo {
     pub destination: String,
     pub destination_type: BindingDestinationType,
     pub routing_key: String,
+    #[tabled(skip)]
     pub arguments: XArguments,
     pub properties_key: String,
 }
@@ -356,10 +363,11 @@ pub struct RuntimeParameter {
     pub name: String,
     pub vhost: String,
     pub component: String,
+    #[tabled(skip)]
     pub value: RuntimeParameterValue,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClusterIdentity {
     pub name: String,
@@ -367,7 +375,7 @@ pub struct ClusterIdentity {
 
 pub type PolicyDefinition = Option<Map<String, serde_json::Value>>;
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct Policy {
     pub name: String,
