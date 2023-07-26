@@ -129,8 +129,8 @@ pub enum BindingDestinationType {
 impl fmt::Display for BindingDestinationType {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            BindingDestinationType::Queue => write!(f, "{}", "queue")?,
-            BindingDestinationType::Exchange => write!(f, "{}", "exchange")?,
+            BindingDestinationType::Queue => write!(f, "queue")?,
+            BindingDestinationType::Exchange => write!(f, "exchange")?,
         };
 
         Ok(())
