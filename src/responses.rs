@@ -387,7 +387,7 @@ pub struct Policy {
     pub definition: PolicyDefinition,
 }
 
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Tabled)]
 #[allow(dead_code)]
 pub struct Permissions {
     pub user: String,
