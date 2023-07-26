@@ -1,7 +1,10 @@
 use std::fmt;
 
 use crate::commons::{BindingDestinationType, PolicyTarget};
-use serde::Deserialize;
+use serde::{
+    de::{MapAccess, Visitor},
+    Deserialize,
+};
 use serde_aux::prelude::*;
 use serde_json::Map;
 use tabled::Tabled;
@@ -54,7 +57,7 @@ impl fmt::Display for NodeList {
 }
 
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Default)]
 #[allow(dead_code)]
 pub struct VirtualHostMetadata {
     /// Optional tags
@@ -147,6 +150,7 @@ pub struct Connection {
     pub channel_max: u16,
     /// How many channels are opened on this connection.
     #[serde(rename(deserialize = "channels"))]
+    #[serde(default)]
     pub channel_count: u16,
     /// Client-provided properties (metadata and capabilities).
     #[tabled(skip)]
@@ -156,11 +160,15 @@ pub struct Connection {
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClientProperties {
+    #[serde(default)]
     pub connection_name: String,
+    #[serde(default)]
     pub platform: String,
+    #[serde(default)]
     pub product: String,
+    #[serde(default)]
     pub version: String,
-    pub capabilities: ClientCapabilities,
+    pub capabilities: Option<ClientCapabilities>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -272,6 +280,7 @@ pub struct QueueInfo {
     pub arguments: XArguments,
 
     pub node: String,
+    #[serde(default)]
     pub state: String,
     // only quorum queues and streams will have this
     #[tabled(display_with = "display_option")]
@@ -281,9 +290,12 @@ pub struct QueueInfo {
     #[tabled(display_with = "display_option")]
     pub online: Option<NodeList>,
 
+    #[serde(default)]
     pub memory: u64,
     #[serde(rename(deserialize = "consumers"))]
+    #[serde(default)]
     pub consumer_count: u16,
+    #[serde(default)]
     pub consumer_utilisation: f32,
     #[tabled(display_with = "display_option")]
     pub exclusive_consumer_tag: Option<String>,
@@ -291,19 +303,28 @@ pub struct QueueInfo {
     #[tabled(display_with = "display_option")]
     pub policy: Option<String>,
 
+    #[serde(default)]
     pub message_bytes: u64,
+    #[serde(default)]
     pub message_bytes_persistent: u64,
+    #[serde(default)]
     pub message_bytes_ram: u64,
+    #[serde(default)]
     pub message_bytes_ready: u64,
+    #[serde(default)]
     pub message_bytes_unacknowledged: u64,
 
     #[serde(rename(deserialize = "messages"))]
+    #[serde(default)]
     pub message_count: u64,
     #[serde(rename(deserialize = "messages_persistent"))]
+    #[serde(default)]
     pub on_disk_message_count: u64,
     #[serde(rename(deserialize = "messages_ram"))]
+    #[serde(default)]
     pub in_memory_message_count: u64,
     #[serde(rename(deserialize = "messages_unacknowledged"))]
+    #[serde(default)]
     pub unacknowledged_message_count: u64,
 }
 
@@ -363,8 +384,45 @@ pub struct RuntimeParameter {
     pub name: String,
     pub vhost: String,
     pub component: String,
+    #[serde(deserialize_with = "deserialize_runtime_parameter_value")]
     #[tabled(skip)]
     pub value: RuntimeParameterValue,
+}
+
+fn deserialize_runtime_parameter_value<'de, D>(
+    deserializer: D,
+) -> Result<Map<String, serde_json::Value>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    struct RuntimeParameterValueVisitor;
+
+    impl<'de> Visitor<'de> for RuntimeParameterValueVisitor {
+        type Value = RuntimeParameterValue;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("a runtime parameter")
+        }
+
+        fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
+        where
+            A: serde::de::SeqAccess<'de>,
+        {
+            // Always deserialize the value as a map, even if the server
+            // sends a sequence.
+            Ok(Map::new())
+        }
+
+        fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
+        where
+            A: MapAccess<'de>,
+        {
+            let deserializer = serde::de::value::MapAccessDeserializer::new(map);
+            Deserialize::deserialize(deserializer)
+        }
+    }
+
+    deserializer.deserialize_any(RuntimeParameterValueVisitor)
 }
 
 #[derive(Debug, Deserialize, Clone)]
