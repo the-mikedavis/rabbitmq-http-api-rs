@@ -13,7 +13,7 @@ fn fmt_list(f: &mut fmt::Formatter<'_>, xs: &Vec<String>) -> fmt::Result {
     match xs.len() {
         0 => {
             write!(f, "[]")
-        },
+        }
         _ => {
             write!(f, "[")?;
             let last_element = xs.clone().pop().unwrap();
@@ -28,10 +28,12 @@ fn fmt_list(f: &mut fmt::Formatter<'_>, xs: &Vec<String>) -> fmt::Result {
 }
 
 fn display_option<T>(opt: &Option<T>) -> String
-where T: fmt::Display {
+where
+    T: fmt::Display,
+{
     match opt {
         None => "".to_owned(),
-        Some(val) => format!("{}", val).to_owned()
+        Some(val) => format!("{}", val).to_owned(),
     }
 }
 
@@ -55,7 +57,6 @@ impl fmt::Display for NodeList {
         fmt_list(f, &self.0)
     }
 }
-
 
 #[derive(Debug, Deserialize, Clone, Default)]
 #[allow(dead_code)]
