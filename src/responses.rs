@@ -104,9 +104,20 @@ pub struct VirtualHost {
     pub metadata: VirtualHostMetadata,
 }
 
-pub type EnforcedLimits = Map<String, serde_json::Value>;
-
 #[derive(Debug, Deserialize, Clone)]
+pub struct EnforcedLimits(pub Map<String, serde_json::Value>);
+impl fmt::Display for EnforcedLimits {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let coll = &self.0;
+        for (k, v) in coll.iter() {
+            writeln!(f, "{}: {}", k, v)?;
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct VirtualHostLimits {
     pub vhost: String,
