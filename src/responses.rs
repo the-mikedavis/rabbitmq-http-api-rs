@@ -432,9 +432,22 @@ pub struct ClusterIdentity {
     pub name: String,
 }
 
-pub type PolicyDefinition = Option<Map<String, serde_json::Value>>;
-
 #[derive(Debug, Deserialize, Clone)]
+pub struct PolicyDefinition(pub Option<Map<String, serde_json::Value>>);
+
+impl fmt::Display for PolicyDefinition {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(def) = &self.0 {
+            for (k, v) in def.iter() {
+                writeln!(f, "{}: {}", k, v)?;
+            }
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct Policy {
     pub name: String,

@@ -186,6 +186,14 @@ pub enum PolicyTarget {
     All,
 }
 
+impl fmt::Display for PolicyTarget {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", Into::<String>::into(self.clone()))?;
+
+        Ok(())
+    }
+}
+
 impl From<&str> for PolicyTarget {
     fn from(value: &str) -> Self {
         match value {
