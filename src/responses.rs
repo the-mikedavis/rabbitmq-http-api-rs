@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::fmt;
 
 use crate::commons::{BindingDestinationType, PolicyTarget};
@@ -46,7 +47,19 @@ impl fmt::Display for TagList {
     }
 }
 
-pub type XArguments = Map<String, serde_json::Value>;
+#[derive(Debug, Deserialize, Clone)]
+pub struct XArguments(pub Map<String, serde_json::Value>);
+impl fmt::Display for XArguments {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let coll = &self.0;
+        for (k, v) in coll.iter() {
+            writeln!(f, "{}: {}", k, v)?;
+        }
+
+        Ok(())
+    }
+}
+
 pub type RuntimeParameterValue = Map<String, serde_json::Value>;
 
 #[derive(Debug, Deserialize, Clone)]
@@ -241,7 +254,7 @@ pub struct ChannelDetails {
     pub username: String,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct Consumer {
     pub consumer_tag: String,
@@ -250,14 +263,46 @@ pub struct Consumer {
     pub manual_ack: bool,
     pub prefetch_count: u32,
     pub exclusive: bool,
-    #[tabled(skip)]
     pub arguments: XArguments,
     #[serde(rename(deserialize = "consumer_timeout"))]
     pub delivery_ack_timeout: u64,
-    #[tabled(skip)]
     pub queue: NameAndVirtualHost,
-    #[tabled(skip)]
     pub channel_details: ChannelDetails,
+}
+
+impl Tabled for Consumer {
+    const LENGTH: usize = 9;
+
+    fn headers() -> Vec<Cow<'static, str>> {
+        let mut hds: Vec<Cow<'static, str>> = Vec::with_capacity(Self::LENGTH);
+        hds.push(Cow::Borrowed("vhost"));
+        hds.push(Cow::Borrowed("queue"));
+        hds.push(Cow::Borrowed("consumer_tag"));
+        hds.push(Cow::Borrowed("manual_ack"));
+        hds.push(Cow::Borrowed("prefetch_count"));
+        hds.push(Cow::Borrowed("active"));
+        hds.push(Cow::Borrowed("exclusive"));
+        hds.push(Cow::Borrowed("arguments"));
+        hds.push(Cow::Borrowed("delivery_ack_timeout"));
+
+        hds
+    }
+
+    fn fields(&self) -> Vec<Cow<'_, str>> {
+        let mut fds: Vec<Cow<'static, str>> = Vec::with_capacity(Self::LENGTH);
+        let qinfo = &self.queue;
+        fds.push(Cow::Owned(qinfo.vhost.clone()));
+        fds.push(Cow::Owned(qinfo.name.clone()));
+        fds.push(Cow::Owned(self.consumer_tag.clone()));
+        fds.push(Cow::Owned(self.manual_ack.to_string()));
+        fds.push(Cow::Owned(self.prefetch_count.to_string()));
+        fds.push(Cow::Owned(self.active.to_string()));
+        fds.push(Cow::Owned(self.exclusive.to_string()));
+        fds.push(Cow::Owned(self.arguments.to_string()));
+        fds.push(Cow::Owned(self.delivery_ack_timeout.to_string()));
+
+        fds
+    }
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -298,7 +343,7 @@ pub struct QueueInfo {
     pub consumer_count: u16,
     #[serde(default)]
     pub consumer_utilisation: f32,
-    #[tabled(display_with = "display_option")]
+    #[tabled(skip)]
     pub exclusive_consumer_tag: Option<String>,
 
     #[tabled(display_with = "display_option")]
@@ -307,12 +352,16 @@ pub struct QueueInfo {
     #[serde(default)]
     pub message_bytes: u64,
     #[serde(default)]
+    #[tabled(skip)]
     pub message_bytes_persistent: u64,
     #[serde(default)]
+    #[tabled(skip)]
     pub message_bytes_ram: u64,
     #[serde(default)]
+    #[tabled(skip)]
     pub message_bytes_ready: u64,
     #[serde(default)]
+    #[tabled(skip)]
     pub message_bytes_unacknowledged: u64,
 
     #[serde(rename(deserialize = "messages"))]
@@ -320,9 +369,11 @@ pub struct QueueInfo {
     pub message_count: u64,
     #[serde(rename(deserialize = "messages_persistent"))]
     #[serde(default)]
+    #[tabled(skip)]
     pub on_disk_message_count: u64,
     #[serde(rename(deserialize = "messages_ram"))]
     #[serde(default)]
+    #[tabled(skip)]
     pub in_memory_message_count: u64,
     #[serde(rename(deserialize = "messages_unacknowledged"))]
     #[serde(default)]
