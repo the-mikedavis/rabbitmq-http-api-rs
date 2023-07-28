@@ -132,6 +132,7 @@ impl fmt::Display for BindingDestinationType {
             BindingDestinationType::Queue => write!(f, "queue")?,
             BindingDestinationType::Exchange => write!(f, "exchange")?,
         };
+        write!(f, "{}", &self.to_string())?;
 
         Ok(())
     }
@@ -184,6 +185,14 @@ pub enum PolicyTarget {
     Streams,
     Exchanges,
     All,
+}
+
+impl fmt::Display for PolicyTarget {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", Into::<String>::into(self.clone()))?;
+
+        Ok(())
+    }
 }
 
 impl From<&str> for PolicyTarget {

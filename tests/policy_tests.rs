@@ -99,7 +99,7 @@ fn test_a_policy(rc: &Client, policy: &PolicyParams) {
 
     // validate it was created as expected
     let result = rc.get_policy(policy.vhost, policy.name);
-    assert!(result.unwrap().definition == policy.definition);
+    assert_eq!(result.unwrap().definition.0, policy.definition);
 
     // delete it
     assert!(rc.delete_policy(policy.vhost, policy.name).is_ok());
@@ -119,7 +119,7 @@ fn test_an_operator_policy(rc: &Client, policy: &PolicyParams) {
 
     // validate it was created as expected
     let result = rc.get_operator_policy(policy.vhost, policy.name);
-    assert!(result.unwrap().definition == policy.definition);
+    assert_eq!(result.unwrap().definition.0, policy.definition);
 
     // delete it
     assert!(rc.delete_operator_policy(policy.vhost, policy.name).is_ok());
