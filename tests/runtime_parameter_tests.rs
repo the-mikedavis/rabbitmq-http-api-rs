@@ -88,7 +88,7 @@ fn test_deserialize_sequence_value() {
 
     let expected_value: RuntimeParameterValue = serde_json::Map::new();
 
-    assert_eq!(param.value, expected_value);
+    assert_eq!(param.value.0, expected_value);
 }
 
 //

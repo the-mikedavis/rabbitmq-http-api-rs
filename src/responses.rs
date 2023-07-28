@@ -60,7 +60,38 @@ impl fmt::Display for XArguments {
     }
 }
 
-pub type RuntimeParameterValue = Map<String, serde_json::Value>;
+#[derive(Debug, Deserialize, Clone)]
+pub struct RuntimeParameterValue(pub Map<String, serde_json::Value>);
+impl fmt::Display for RuntimeParameterValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let coll = &self.0;
+        for (k, v) in coll.iter() {
+            writeln!(f, "{}: {}", k, v)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl RuntimeParameterValue {
+    #[inline]
+    pub fn get<Q>(&self, key: &Q) -> Option<&serde_json::Value>
+    where
+        String: Borrow<Q>,
+        Q: ?Sized + Ord + Eq + core::hash::Hash,
+    {
+        self.0.get(key)
+    }
+
+    #[inline]
+    pub fn contains_key<Q>(&self, key: &Q) -> bool
+    where
+        String: Borrow<Q>,
+        Q: ?Sized + Ord + Eq + core::hash::Hash,
+    {
+        self.0.contains_key(key)
+    }
+}
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct NodeList(Vec<String>);
@@ -469,13 +500,12 @@ pub struct RuntimeParameter {
     pub vhost: String,
     pub component: String,
     #[serde(deserialize_with = "deserialize_runtime_parameter_value")]
-    #[tabled(skip)]
     pub value: RuntimeParameterValue,
 }
 
 fn deserialize_runtime_parameter_value<'de, D>(
     deserializer: D,
-) -> Result<Map<String, serde_json::Value>, D::Error>
+) -> Result<RuntimeParameterValue, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
@@ -494,7 +524,7 @@ where
         {
             // Always deserialize the value as a map, even if the server
             // sends a sequence.
-            Ok(Map::new())
+            Ok(RuntimeParameterValue(Map::new()))
         }
 
         fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
@@ -502,7 +532,8 @@ where
             A: MapAccess<'de>,
         {
             let deserializer = serde::de::value::MapAccessDeserializer::new(map);
-            Deserialize::deserialize(deserializer)
+            let m = Deserialize::deserialize(deserializer)?;
+            Ok(RuntimeParameterValue(m))
         }
     }
 
