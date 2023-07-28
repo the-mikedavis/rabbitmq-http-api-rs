@@ -146,7 +146,7 @@ pub struct VirtualHostLimits {
     pub limits: EnforcedLimits,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Tabled)]
 #[allow(dead_code)]
 pub struct UserLimits {
     #[serde(rename(deserialize = "user"))]
