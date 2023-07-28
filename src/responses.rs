@@ -112,7 +112,8 @@ impl EnforcedLimits {
     pub fn get<Q>(&self, key: &Q) -> Option<&serde_json::Value>
     where
         String: Borrow<Q>,
-        Q: ?Sized + Ord + Eq + core::hash::Hash {
+        Q: ?Sized + Ord + Eq + core::hash::Hash,
+    {
         self.0.get(key)
     }
 
@@ -120,7 +121,7 @@ impl EnforcedLimits {
     pub fn contains_key<Q>(&self, key: &Q) -> bool
     where
         String: Borrow<Q>,
-        Q: ?Sized + Ord + Eq + core::hash::Hash
+        Q: ?Sized + Ord + Eq + core::hash::Hash,
     {
         self.0.contains_key(key)
     }
