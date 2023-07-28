@@ -132,7 +132,6 @@ impl fmt::Display for BindingDestinationType {
             BindingDestinationType::Queue => write!(f, "queue")?,
             BindingDestinationType::Exchange => write!(f, "exchange")?,
         };
-        write!(f, "{}", &self.to_string())?;
 
         Ok(())
     }
