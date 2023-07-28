@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::borrow::{Borrow, Cow};
 use std::fmt;
 
 use crate::commons::{BindingDestinationType, PolicyTarget};
@@ -106,6 +106,26 @@ pub struct VirtualHost {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct EnforcedLimits(pub Map<String, serde_json::Value>);
+
+impl EnforcedLimits {
+    #[inline]
+    pub fn get<Q>(&self, key: &Q) -> Option<&serde_json::Value>
+    where
+        String: Borrow<Q>,
+        Q: ?Sized + Ord + Eq + core::hash::Hash {
+        self.0.get(key)
+    }
+
+    #[inline]
+    pub fn contains_key<Q>(&self, key: &Q) -> bool
+    where
+        String: Borrow<Q>,
+        Q: ?Sized + Ord + Eq + core::hash::Hash
+    {
+        self.0.contains_key(key)
+    }
+}
+
 impl fmt::Display for EnforcedLimits {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let coll = &self.0;
