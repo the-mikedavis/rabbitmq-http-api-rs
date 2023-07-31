@@ -8,6 +8,8 @@ use serde::{
 };
 use serde_aux::prelude::*;
 use serde_json::Map;
+
+#[cfg(feature = "tabled")]
 use tabled::Tabled;
 
 fn fmt_list(f: &mut fmt::Formatter<'_>, xs: &Vec<String>) -> fmt::Result {
@@ -115,7 +117,8 @@ pub struct VirtualHostMetadata {
 }
 
 /// Represents a [RabbitMQ virtual host](https://rabbitmq.com/vhosts.html).
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct VirtualHost {
     /// Virtual host name
@@ -169,7 +172,8 @@ impl fmt::Display for EnforcedLimits {
     }
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct VirtualHostLimits {
     pub vhost: String,
@@ -177,7 +181,8 @@ pub struct VirtualHostLimits {
     pub limits: EnforcedLimits,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct UserLimits {
     #[serde(rename(deserialize = "user"))]
@@ -186,7 +191,8 @@ pub struct UserLimits {
     pub limits: EnforcedLimits,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct User {
     pub name: String,
@@ -195,7 +201,8 @@ pub struct User {
 }
 
 /// Represents a client connection.
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct Connection {
     /// Connection name. Use it to close this connection.
@@ -263,7 +270,8 @@ pub struct ClientCapabilities {
     pub publisher_confirms: bool,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct UserConnection {
     pub name: String,
@@ -273,7 +281,8 @@ pub struct UserConnection {
     pub vhost: String,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct Channel {
     #[serde(rename(deserialize = "number"))]
@@ -333,6 +342,7 @@ pub struct Consumer {
     pub channel_details: ChannelDetails,
 }
 
+#[cfg(feature = "tabled")]
 impl Tabled for Consumer {
     const LENGTH: usize = 9;
 
@@ -375,7 +385,8 @@ pub struct NameAndVirtualHost {
     pub vhost: String,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct QueueInfo {
     pub name: String,
@@ -443,7 +454,8 @@ pub struct QueueInfo {
     pub unacknowledged_message_count: u64,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct ExchangeInfo {
     pub name: String,
@@ -456,7 +468,8 @@ pub struct ExchangeInfo {
     pub arguments: XArguments,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct BindingInfo {
     pub vhost: String,
@@ -469,7 +482,8 @@ pub struct BindingInfo {
     pub properties_key: String,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct ClusterNode {
     pub name: String,
@@ -493,7 +507,8 @@ pub struct ClusterNode {
     pub rates_mode: String,
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct RuntimeParameter {
     pub name: String,
@@ -561,7 +576,8 @@ impl fmt::Display for PolicyDefinition {
     }
 }
 
-#[derive(Debug, Deserialize, Clone, Tabled)]
+#[derive(Debug, Deserialize, Clone)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct Policy {
     pub name: String,
@@ -573,7 +589,8 @@ pub struct Policy {
     pub definition: PolicyDefinition,
 }
 
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Tabled)]
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct Permissions {
     pub user: String,

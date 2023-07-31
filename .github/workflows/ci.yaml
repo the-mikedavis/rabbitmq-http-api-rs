@@ -19,7 +19,7 @@ jobs:
           components: rustfmt, clippy
 
       - name: Lint (clippy)
-        run: cargo clippy
+        run: cargo clippy --all-features
 
       - name: Lint (rustfmt)
         run: cargo fmt --all --check
@@ -52,4 +52,4 @@ jobs:
         run: RUST_HTTP_API_CLIENT_RABBITMQCTL=DOCKER:${{job.services.rabbitmq.id}} bin/ci/before_build.sh
 
       - name: Run cargo test
-        run: cargo test --workspace --no-fail-fast
+        run: cargo test --workspace --no-fail-fast --all-features
