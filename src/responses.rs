@@ -399,6 +399,7 @@ pub struct QueueInfo {
     #[tabled(skip)]
     pub arguments: XArguments,
 
+    #[serde(default = "undefined")]
     pub node: String,
     #[serde(default)]
     pub state: String,
@@ -631,4 +632,8 @@ pub struct QuorumEndangeredQueue {
     pub vhost: String,
     #[serde(rename(deserialize = "type"))]
     pub queue_type: String,
+}
+
+fn undefined() -> String {
+    "?".to_string()
 }
