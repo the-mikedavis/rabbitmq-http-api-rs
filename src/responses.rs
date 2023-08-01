@@ -21,7 +21,8 @@ fn fmt_list(f: &mut fmt::Formatter<'_>, xs: &Vec<String>) -> fmt::Result {
         }
         _ => {
             write!(f, "[")?;
-            let last_element = xs.clone().pop().unwrap();
+            let mut xs = xs.clone();
+            let last_element = xs.pop().unwrap();
             for elem in xs {
                 write!(f, "{}, ", elem)?;
             }
