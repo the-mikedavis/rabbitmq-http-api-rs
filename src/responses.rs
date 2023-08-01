@@ -1,4 +1,4 @@
-use std::borrow::{Borrow, Cow};
+use std::borrow::Borrow;
 use std::fmt;
 
 use crate::commons::{BindingDestinationType, PolicyTarget};
@@ -9,6 +9,8 @@ use serde::{
 use serde_aux::prelude::*;
 use serde_json::Map;
 
+#[cfg(feature = "tabled")]
+use std::borrow::Cow;
 #[cfg(feature = "tabled")]
 use tabled::Tabled;
 
@@ -30,6 +32,7 @@ fn fmt_list(f: &mut fmt::Formatter<'_>, xs: &Vec<String>) -> fmt::Result {
     }
 }
 
+#[cfg(feature = "tabled")]
 fn display_option<T>(opt: &Option<T>) -> String
 where
     T: fmt::Display,
@@ -124,17 +127,17 @@ pub struct VirtualHost {
     /// Virtual host name
     pub name: String,
     /// Optional tags
-    #[tabled(display_with = "display_option")]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
     pub tags: Option<TagList>,
     /// Optional description
-    #[tabled(display_with = "display_option")]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
     pub description: Option<String>,
     /// Default queue type used in this virtual host when clients
     /// do not explicitly specify one
-    #[tabled(display_with = "display_option")]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
     pub default_queue_type: Option<String>,
     /// All virtual host metadata combined
-    #[tabled(skip)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
     pub metadata: VirtualHostMetadata,
 }
 
@@ -237,7 +240,7 @@ pub struct Connection {
     #[serde(default)]
     pub channel_count: u16,
     /// Client-provided properties (metadata and capabilities).
-    #[tabled(skip)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
     pub client_properties: ClientProperties,
 }
 
@@ -288,7 +291,7 @@ pub struct Channel {
     #[serde(rename(deserialize = "number"))]
     pub id: u32,
     pub name: String,
-    #[tabled(skip)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
     pub connection_details: ConnectionDetails,
     pub vhost: String,
     pub state: String,
@@ -396,7 +399,7 @@ pub struct QueueInfo {
     pub durable: bool,
     pub auto_delete: bool,
     pub exclusive: bool,
-    #[tabled(skip)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
     pub arguments: XArguments,
 
     #[serde(default = "undefined")]
@@ -404,11 +407,11 @@ pub struct QueueInfo {
     #[serde(default)]
     pub state: String,
     // only quorum queues and streams will have this
-    #[tabled(display_with = "display_option")]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
     pub leader: Option<String>,
-    #[tabled(display_with = "display_option")]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
     pub members: Option<NodeList>,
-    #[tabled(display_with = "display_option")]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
     pub online: Option<NodeList>,
 
     #[serde(default)]
@@ -418,25 +421,25 @@ pub struct QueueInfo {
     pub consumer_count: u16,
     #[serde(default)]
     pub consumer_utilisation: f32,
-    #[tabled(skip)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
     pub exclusive_consumer_tag: Option<String>,
 
-    #[tabled(display_with = "display_option")]
+    #[cfg_attr(feature = "tabled", tabled(display_with = "display_option"))]
     pub policy: Option<String>,
 
     #[serde(default)]
     pub message_bytes: u64,
     #[serde(default)]
-    #[tabled(skip)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
     pub message_bytes_persistent: u64,
     #[serde(default)]
-    #[tabled(skip)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
     pub message_bytes_ram: u64,
     #[serde(default)]
-    #[tabled(skip)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
     pub message_bytes_ready: u64,
     #[serde(default)]
-    #[tabled(skip)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
     pub message_bytes_unacknowledged: u64,
 
     #[serde(rename(deserialize = "messages"))]
@@ -444,11 +447,11 @@ pub struct QueueInfo {
     pub message_count: u64,
     #[serde(rename(deserialize = "messages_persistent"))]
     #[serde(default)]
-    #[tabled(skip)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
     pub on_disk_message_count: u64,
     #[serde(rename(deserialize = "messages_ram"))]
     #[serde(default)]
-    #[tabled(skip)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
     pub in_memory_message_count: u64,
     #[serde(rename(deserialize = "messages_unacknowledged"))]
     #[serde(default)]
@@ -465,7 +468,7 @@ pub struct ExchangeInfo {
     pub exchange_type: String,
     pub durable: bool,
     pub auto_delete: bool,
-    #[tabled(skip)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
     pub arguments: XArguments,
 }
 
@@ -478,7 +481,7 @@ pub struct BindingInfo {
     pub destination: String,
     pub destination_type: BindingDestinationType,
     pub routing_key: String,
-    #[tabled(skip)]
+    #[cfg_attr(feature = "tabled", tabled(skip))]
     pub arguments: XArguments,
     pub properties_key: String,
 }
