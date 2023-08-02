@@ -1,7 +1,7 @@
 use crate::{
     commons::{BindingDestinationType, UserLimitTarget, VirtualHostLimitTarget},
     requests::{
-        EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams, QueueParams,
+        self, EnforcedLimitParams, ExchangeParams, Permissions, PolicyParams, QueueParams,
         RuntimeParameterDefinition, UserParams, VirtualHostParams, XArguments,
     },
     responses::{self, BindingInfo},
@@ -1049,6 +1049,65 @@ impl<'a> Client<'a> {
         Err(Error::HealthCheckFailed(
             responses::HealthCheckFailureDetails::NodeIsQuorumCritical(failure_details),
         ))
+    }
+
+    //
+    // Publish and consume messages
+    //
+    pub fn publish_message(
+        &self,
+        vhost: &str,
+        exchange: &str,
+        routing_key: &str,
+        payload: &str,
+        properties: requests::MessageProperties,
+    ) -> Result<responses::MessageRouted> {
+        let url = format!(
+            "exchanges/{}/{}/publish",
+            self.percent_encode(vhost),
+            self.percent_encode(exchange)
+        );
+
+        let body = serde_json::json!({
+          "routing_key": routing_key,
+          "payload": payload,
+          "payload_encoding": "string",
+          "properties": properties,
+        });
+
+        let response = self.http_post(&url, &body)?;
+
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<responses::MessageRouted>()
+            .map_err(Error::from)
+    }
+
+    pub fn get_messages(
+        &self,
+        vhost: &str,
+        queue: &str,
+        count: i32,
+        ack_mode: &str,
+    ) -> Result<Vec<responses::GetMessage>> {
+        let url = format!(
+            "queues/{}/{}/get",
+            self.percent_encode(vhost),
+            self.percent_encode(queue)
+        );
+
+        let body = serde_json::json!({
+          "count": count,
+          "ackmode": ack_mode,
+          "encoding": "auto"
+        });
+
+        let response = self.http_post(&url, &body)?;
+
+        let response2 = self.ok_or_status_code_error(response)?;
+        response2
+            .json::<Vec<responses::GetMessage>>()
+            .map_err(Error::from)
     }
 
     //
