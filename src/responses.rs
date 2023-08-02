@@ -66,7 +66,7 @@ impl fmt::Display for XArguments {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Default)]
 pub struct RuntimeParameterValue(pub Map<String, serde_json::Value>);
 impl fmt::Display for RuntimeParameterValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -637,6 +637,83 @@ pub struct QuorumEndangeredQueue {
     pub vhost: String,
     #[serde(rename(deserialize = "type"))]
     pub queue_type: String,
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct GetMessage {
+    pub payload_bytes: i32,
+    pub redelivered: bool,
+    pub exchange: String,
+    pub routing_key: String,
+    pub message_count: i32,
+    #[serde(deserialize_with = "deserialize_message_properties")]
+    pub properties: MessageProperties,
+    pub payload: String,
+    pub payload_encoding: String,
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+pub struct MessageRouted {
+    pub routed: bool,
+}
+
+impl fmt::Display for MessageRouted {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.routed {
+            true => write!(f, "Message published and routed successfully"),
+            false => write!(f, "Message published but NOT routed"),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]
+pub struct MessageProperties(pub Map<String, serde_json::Value>);
+
+impl fmt::Display for MessageProperties {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for (k, v) in &self.0 {
+            writeln!(f, "{}: {}", k, v)?;
+        }
+
+        Ok(())
+    }
+}
+
+fn deserialize_message_properties<'de, D>(deserializer: D) -> Result<MessageProperties, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    struct MessagePropertiesVisitor;
+
+    impl<'de> Visitor<'de> for MessagePropertiesVisitor {
+        type Value = MessageProperties;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("message properties")
+        }
+
+        fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
+        where
+            A: serde::de::SeqAccess<'de>,
+        {
+            // Always deserialize the value as a map, even if the server
+            // sends a sequence.
+            Ok(MessageProperties(Map::new()))
+        }
+
+        fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
+        where
+            A: MapAccess<'de>,
+        {
+            let deserializer = serde::de::value::MapAccessDeserializer::new(map);
+            let m = Deserialize::deserialize(deserializer)?;
+            Ok(MessageProperties(m))
+        }
+    }
+
+    deserializer.deserialize_any(MessagePropertiesVisitor)
 }
 
 fn undefined() -> String {
