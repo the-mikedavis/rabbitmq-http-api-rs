@@ -725,10 +725,12 @@ where
     T: Default + serde::Deserialize<'de>,
     D: serde::Deserializer<'de>,
 {
-    struct MapVisitor;
+    struct MapVisitor<T> {
+        default: T,
+    }
 
-    impl<'de> Visitor<'de> for MapVisitor {
-        type Value = T; // ???
+    impl<'de, T: serde::Deserialize<'de>> Visitor<'de> for MapVisitor<T> {
+        type Value = T;
 
         fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
             formatter.write_str("map")
@@ -740,19 +742,21 @@ where
         {
             let deserializer = serde::de::value::MapAccessDeserializer::new(map);
             let m = Deserialize::deserialize(deserializer)?;
-            Ok(m) // ???
+            Ok(m)
         }
 
         fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
         where
             A: serde::de::SeqAccess<'de>,
         {
-            // Deserialize as empty map if sequence
-            Ok(serde_json::Map::new()) // ???
+            // Treat a sequence as the default for the type.
+            Ok(self.default)
         }
     }
 
-    deserializer.deserialize_any(MapVisitor)
+    deserializer.deserialize_any(MapVisitor {
+        default: T::default(),
+    })
 }
 
 fn deserialize_message_properties<'de, D>(deserializer: D) -> Result<MessageProperties, D::Error>
