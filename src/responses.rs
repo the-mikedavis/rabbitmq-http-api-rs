@@ -214,6 +214,7 @@ pub struct Connection {
     /// To what node the client is connected
     pub node: String,
     /// Connection state
+    #[serde(default = "undefined")]
     pub state: String,
     /// What protocol the connection uses
     pub protocol: String,
