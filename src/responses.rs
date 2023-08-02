@@ -524,42 +524,42 @@ pub struct RuntimeParameter {
     pub value: RuntimeParameterValue,
 }
 
-fn deserialize_runtime_parameter_value<'de, D>(
-    deserializer: D,
-) -> Result<RuntimeParameterValue, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    struct RuntimeParameterValueVisitor;
+// fn deserialize_runtime_parameter_value<'de, D>(
+//     deserializer: D,
+// ) -> Result<RuntimeParameterValue, D::Error>
+// where
+//     D: serde::Deserializer<'de>,
+// {
+//     struct RuntimeParameterValueVisitor;
 
-    impl<'de> Visitor<'de> for RuntimeParameterValueVisitor {
-        type Value = RuntimeParameterValue;
+//     impl<'de> Visitor<'de> for RuntimeParameterValueVisitor {
+//         type Value = RuntimeParameterValue;
 
-        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-            formatter.write_str("a runtime parameter")
-        }
+//         fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+//             formatter.write_str("a runtime parameter")
+//         }
 
-        fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
-        where
-            A: serde::de::SeqAccess<'de>,
-        {
-            // Always deserialize the value as a map, even if the server
-            // sends a sequence.
-            Ok(RuntimeParameterValue(Map::new()))
-        }
+//         fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
+//         where
+//             A: serde::de::SeqAccess<'de>,
+//         {
+//             // Always deserialize the value as a map, even if the server
+//             // sends a sequence.
+//             Ok(RuntimeParameterValue(Map::new()))
+//         }
 
-        fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
-        where
-            A: MapAccess<'de>,
-        {
-            let deserializer = serde::de::value::MapAccessDeserializer::new(map);
-            let m = Deserialize::deserialize(deserializer)?;
-            Ok(RuntimeParameterValue(m))
-        }
-    }
+//         fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
+//         where
+//             A: MapAccess<'de>,
+//         {
+//             let deserializer = serde::de::value::MapAccessDeserializer::new(map);
+//             let m = Deserialize::deserialize(deserializer)?;
+//             Ok(RuntimeParameterValue(m))
+//         }
+//     }
 
-    deserializer.deserialize_any(RuntimeParameterValueVisitor)
-}
+//     deserializer.deserialize_any(RuntimeParameterValueVisitor)
+// }
 
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
@@ -681,26 +681,57 @@ impl fmt::Display for MessageProperties {
     }
 }
 
-fn deserialize_message_properties<'de, D>(deserializer: D) -> Result<MessageProperties, D::Error>
+// fn deserialize_message_properties<'de, D>(deserializer: D) -> Result<MessageProperties, D::Error>
+// where
+//     D: serde::Deserializer<'de>,
+// {
+//     struct MessagePropertiesVisitor;
+
+//     impl<'de> Visitor<'de> for MessagePropertiesVisitor {
+//         type Value = MessageProperties;
+
+//         fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+//             formatter.write_str("message properties")
+//         }
+
+//         fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
+//         where
+//             A: serde::de::SeqAccess<'de>,
+//         {
+//             // Always deserialize the value as a map, even if the server
+//             // sends a sequence.
+//             Ok(MessageProperties(Map::new()))
+//         }
+
+//         fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
+//         where
+//             A: MapAccess<'de>,
+//         {
+//             let deserializer = serde::de::value::MapAccessDeserializer::new(map);
+//             let m = Deserialize::deserialize(deserializer)?;
+//             Ok(MessageProperties(m))
+//         }
+//     }
+
+//     deserializer.deserialize_any(MessagePropertiesVisitor)
+// }
+
+fn undefined() -> String {
+    "?".to_string()
+}
+
+fn deserialize_map_or_seq<'de, T, D>(deserializer: D) -> Result<T, D::Error>
 where
+    T: Default + serde::Deserialize<'de>,
     D: serde::Deserializer<'de>,
 {
-    struct MessagePropertiesVisitor;
+    struct MapVisitor;
 
-    impl<'de> Visitor<'de> for MessagePropertiesVisitor {
-        type Value = MessageProperties;
+    impl<'de> Visitor<'de> for MapVisitor {
+        type Value = T; // ???
 
         fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-            formatter.write_str("message properties")
-        }
-
-        fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
-        where
-            A: serde::de::SeqAccess<'de>,
-        {
-            // Always deserialize the value as a map, even if the server
-            // sends a sequence.
-            Ok(MessageProperties(Map::new()))
+            formatter.write_str("map")
         }
 
         fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
@@ -709,13 +740,33 @@ where
         {
             let deserializer = serde::de::value::MapAccessDeserializer::new(map);
             let m = Deserialize::deserialize(deserializer)?;
-            Ok(MessageProperties(m))
+            Ok(m) // ???
+        }
+
+        fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
+        where
+            A: serde::de::SeqAccess<'de>,
+        {
+            // Deserialize as empty map if sequence
+            Ok(serde_json::Map::new()) // ???
         }
     }
 
-    deserializer.deserialize_any(MessagePropertiesVisitor)
+    deserializer.deserialize_any(MapVisitor)
 }
 
-fn undefined() -> String {
-    "?".to_string()
+fn deserialize_message_properties<'de, D>(deserializer: D) -> Result<MessageProperties, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    deserialize_map_or_seq::<MessageProperties, D>(deserializer)
+}
+
+fn deserialize_runtime_parameter_value<'de, D>(
+    deserializer: D,
+) -> Result<RuntimeParameterValue, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    deserialize_map_or_seq::<RuntimeParameterValue, D>(deserializer)
 }
