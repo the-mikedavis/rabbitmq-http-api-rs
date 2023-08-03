@@ -269,3 +269,5 @@ pub struct Permissions<'a> {
     pub read: &'a str,
     pub write: &'a str,
 }
+
+pub type MessageProperties = Map<String, Value>;

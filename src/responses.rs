@@ -66,7 +66,8 @@ impl fmt::Display for XArguments {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, Default)]
+#[serde(transparent)]
 pub struct RuntimeParameterValue(pub Map<String, serde_json::Value>);
 impl fmt::Display for RuntimeParameterValue {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -524,43 +525,6 @@ pub struct RuntimeParameter {
     pub value: RuntimeParameterValue,
 }
 
-fn deserialize_runtime_parameter_value<'de, D>(
-    deserializer: D,
-) -> Result<RuntimeParameterValue, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    struct RuntimeParameterValueVisitor;
-
-    impl<'de> Visitor<'de> for RuntimeParameterValueVisitor {
-        type Value = RuntimeParameterValue;
-
-        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-            formatter.write_str("a runtime parameter")
-        }
-
-        fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
-        where
-            A: serde::de::SeqAccess<'de>,
-        {
-            // Always deserialize the value as a map, even if the server
-            // sends a sequence.
-            Ok(RuntimeParameterValue(Map::new()))
-        }
-
-        fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
-        where
-            A: MapAccess<'de>,
-        {
-            let deserializer = serde::de::value::MapAccessDeserializer::new(map);
-            let m = Deserialize::deserialize(deserializer)?;
-            Ok(RuntimeParameterValue(m))
-        }
-    }
-
-    deserializer.deserialize_any(RuntimeParameterValueVisitor)
-}
-
 #[derive(Debug, Deserialize, Clone)]
 #[allow(dead_code)]
 pub struct ClusterIdentity {
@@ -639,6 +603,104 @@ pub struct QuorumEndangeredQueue {
     pub queue_type: String,
 }
 
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+#[cfg_attr(feature = "tabled", derive(Tabled))]
+#[allow(dead_code)]
+pub struct GetMessage {
+    pub payload_bytes: u32,
+    pub redelivered: bool,
+    pub exchange: String,
+    pub routing_key: String,
+    pub message_count: u32,
+    #[serde(deserialize_with = "deserialize_message_properties")]
+    pub properties: MessageProperties,
+    pub payload: String,
+    pub payload_encoding: String,
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq)]
+pub struct MessageRouted {
+    pub routed: bool,
+}
+
+impl fmt::Display for MessageRouted {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.routed {
+            true => write!(f, "Message published and routed successfully"),
+            false => write!(f, "Message published but NOT routed"),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]
+#[serde(transparent)]
+pub struct MessageProperties(pub Map<String, serde_json::Value>);
+
+impl fmt::Display for MessageProperties {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for (k, v) in &self.0 {
+            writeln!(f, "{}: {}", k, v)?;
+        }
+
+        Ok(())
+    }
+}
+
 fn undefined() -> String {
     "?".to_string()
+}
+
+fn deserialize_map_or_seq<'de, T, D>(deserializer: D) -> Result<T, D::Error>
+where
+    T: Default + serde::Deserialize<'de>,
+    D: serde::Deserializer<'de>,
+{
+    struct MapVisitor<T> {
+        default: T,
+    }
+
+    impl<'de, T: serde::Deserialize<'de>> Visitor<'de> for MapVisitor<T> {
+        type Value = T;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("map")
+        }
+
+        fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
+        where
+            A: MapAccess<'de>,
+        {
+            let deserializer = serde::de::value::MapAccessDeserializer::new(map);
+            let m = Deserialize::deserialize(deserializer)?;
+            Ok(m)
+        }
+
+        fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
+        where
+            A: serde::de::SeqAccess<'de>,
+        {
+            // Treat a sequence as the default for the type.
+            Ok(self.default)
+        }
+    }
+
+    deserializer.deserialize_any(MapVisitor {
+        default: T::default(),
+    })
+}
+
+fn deserialize_message_properties<'de, D>(deserializer: D) -> Result<MessageProperties, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    deserialize_map_or_seq::<MessageProperties, D>(deserializer)
+}
+
+fn deserialize_runtime_parameter_value<'de, D>(
+    deserializer: D,
+) -> Result<RuntimeParameterValue, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    deserialize_map_or_seq::<RuntimeParameterValue, D>(deserializer)
 }
