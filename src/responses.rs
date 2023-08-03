@@ -607,11 +607,11 @@ pub struct QuorumEndangeredQueue {
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct GetMessage {
-    pub payload_bytes: i32,
+    pub payload_bytes: u32,
     pub redelivered: bool,
     pub exchange: String,
     pub routing_key: String,
-    pub message_count: i32,
+    pub message_count: u32,
     #[serde(deserialize_with = "deserialize_message_properties")]
     pub properties: MessageProperties,
     pub payload: String,

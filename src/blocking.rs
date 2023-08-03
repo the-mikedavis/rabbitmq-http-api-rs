@@ -1087,7 +1087,7 @@ impl<'a> Client<'a> {
         &self,
         vhost: &str,
         queue: &str,
-        count: i32,
+        count: u32,
         ack_mode: &str,
     ) -> Result<Vec<responses::GetMessage>> {
         let url = format!(
