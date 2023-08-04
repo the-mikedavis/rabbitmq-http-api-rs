@@ -1,5 +1,4 @@
-use std::borrow::Borrow;
-use std::fmt;
+use std::{fmt, ops::Deref};
 
 use crate::commons::{BindingDestinationType, PolicyTarget};
 use serde::{
@@ -7,7 +6,34 @@ use serde::{
     Deserialize,
 };
 use serde_aux::prelude::*;
-use serde_json::Map;
+
+/// A wrapper around a `serde_json::Map<String, serde_json::Value>`.
+#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]
+#[serde(transparent)]
+pub struct Map(serde_json::Map<String, serde_json::Value>);
+
+impl Deref for Map {
+    type Target = serde_json::Map<String, serde_json::Value>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl fmt::Display for Map {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for (k, v) in self.iter() {
+            writeln!(f, "{}: {}", k, v)?;
+        }
+        Ok(())
+    }
+}
+
+impl From<serde_json::Map<String, serde_json::Value>> for Map {
+    fn from(map: serde_json::Map<String, serde_json::Value>) -> Self {
+        Self(map)
+    }
+}
 
 #[cfg(feature = "tabled")]
 use std::borrow::Cow;
@@ -50,53 +76,6 @@ pub struct TagList(pub Vec<String>);
 impl fmt::Display for TagList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt_list(f, &self.0)
-    }
-}
-
-#[derive(Debug, Deserialize, Clone)]
-pub struct XArguments(pub Map<String, serde_json::Value>);
-impl fmt::Display for XArguments {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let coll = &self.0;
-        for (k, v) in coll.iter() {
-            writeln!(f, "{}: {}", k, v)?;
-        }
-
-        Ok(())
-    }
-}
-
-#[derive(Debug, Deserialize, Clone, Default)]
-#[serde(transparent)]
-pub struct RuntimeParameterValue(pub Map<String, serde_json::Value>);
-impl fmt::Display for RuntimeParameterValue {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let coll = &self.0;
-        for (k, v) in coll.iter() {
-            writeln!(f, "{}: {}", k, v)?;
-        }
-
-        Ok(())
-    }
-}
-
-impl RuntimeParameterValue {
-    #[inline]
-    pub fn get<Q>(&self, key: &Q) -> Option<&serde_json::Value>
-    where
-        String: Borrow<Q>,
-        Q: ?Sized + Ord + Eq + core::hash::Hash,
-    {
-        self.0.get(key)
-    }
-
-    #[inline]
-    pub fn contains_key<Q>(&self, key: &Q) -> bool
-    where
-        String: Borrow<Q>,
-        Q: ?Sized + Ord + Eq + core::hash::Hash,
-    {
-        self.0.contains_key(key)
     }
 }
 
@@ -144,46 +123,12 @@ pub struct VirtualHost {
 }
 
 #[derive(Debug, Deserialize, Clone)]
-pub struct EnforcedLimits(pub Map<String, serde_json::Value>);
-
-impl EnforcedLimits {
-    #[inline]
-    pub fn get<Q>(&self, key: &Q) -> Option<&serde_json::Value>
-    where
-        String: Borrow<Q>,
-        Q: ?Sized + Ord + Eq + core::hash::Hash,
-    {
-        self.0.get(key)
-    }
-
-    #[inline]
-    pub fn contains_key<Q>(&self, key: &Q) -> bool
-    where
-        String: Borrow<Q>,
-        Q: ?Sized + Ord + Eq + core::hash::Hash,
-    {
-        self.0.contains_key(key)
-    }
-}
-
-impl fmt::Display for EnforcedLimits {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let coll = &self.0;
-        for (k, v) in coll.iter() {
-            writeln!(f, "{}: {}", k, v)?;
-        }
-
-        Ok(())
-    }
-}
-
-#[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(feature = "tabled", derive(Tabled))]
 #[allow(dead_code)]
 pub struct VirtualHostLimits {
     pub vhost: String,
     #[serde(rename(deserialize = "value"))]
-    pub limits: EnforcedLimits,
+    pub limits: Map,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -193,7 +138,7 @@ pub struct UserLimits {
     #[serde(rename(deserialize = "user"))]
     pub username: String,
     #[serde(rename(deserialize = "value"))]
-    pub limits: EnforcedLimits,
+    pub limits: Map,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -341,7 +286,7 @@ pub struct Consumer {
     pub manual_ack: bool,
     pub prefetch_count: u32,
     pub exclusive: bool,
-    pub arguments: XArguments,
+    pub arguments: Map,
     #[serde(rename(deserialize = "consumer_timeout"))]
     pub delivery_ack_timeout: u64,
     pub queue: NameAndVirtualHost,
@@ -403,7 +348,7 @@ pub struct QueueInfo {
     pub auto_delete: bool,
     pub exclusive: bool,
     #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub arguments: XArguments,
+    pub arguments: Map,
 
     #[serde(default = "undefined")]
     pub node: String,
@@ -472,7 +417,7 @@ pub struct ExchangeInfo {
     pub durable: bool,
     pub auto_delete: bool,
     #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub arguments: XArguments,
+    pub arguments: Map,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -485,7 +430,7 @@ pub struct BindingInfo {
     pub destination_type: BindingDestinationType,
     pub routing_key: String,
     #[cfg_attr(feature = "tabled", tabled(skip))]
-    pub arguments: XArguments,
+    pub arguments: Map,
     pub properties_key: String,
 }
 
@@ -521,8 +466,8 @@ pub struct RuntimeParameter {
     pub name: String,
     pub vhost: String,
     pub component: String,
-    #[serde(deserialize_with = "deserialize_runtime_parameter_value")]
-    pub value: RuntimeParameterValue,
+    #[serde(deserialize_with = "deserialize_map_or_seq")]
+    pub value: Map,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -532,7 +477,7 @@ pub struct ClusterIdentity {
 }
 
 #[derive(Debug, Deserialize, Clone)]
-pub struct PolicyDefinition(pub Option<Map<String, serde_json::Value>>);
+pub struct PolicyDefinition(pub Option<serde_json::Map<String, serde_json::Value>>);
 
 impl fmt::Display for PolicyDefinition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -612,8 +557,8 @@ pub struct GetMessage {
     pub exchange: String,
     pub routing_key: String,
     pub message_count: u32,
-    #[serde(deserialize_with = "deserialize_message_properties")]
-    pub properties: MessageProperties,
+    #[serde(deserialize_with = "deserialize_map_or_seq")]
+    pub properties: Map,
     pub payload: String,
     pub payload_encoding: String,
 }
@@ -632,35 +577,18 @@ impl fmt::Display for MessageRouted {
     }
 }
 
-#[derive(Debug, Deserialize, Clone, Eq, PartialEq, Default)]
-#[serde(transparent)]
-pub struct MessageProperties(pub Map<String, serde_json::Value>);
-
-impl fmt::Display for MessageProperties {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for (k, v) in &self.0 {
-            writeln!(f, "{}: {}", k, v)?;
-        }
-
-        Ok(())
-    }
-}
-
 fn undefined() -> String {
     "?".to_string()
 }
 
-fn deserialize_map_or_seq<'de, T, D>(deserializer: D) -> Result<T, D::Error>
+fn deserialize_map_or_seq<'de, D>(deserializer: D) -> Result<Map, D::Error>
 where
-    T: Default + serde::Deserialize<'de>,
     D: serde::Deserializer<'de>,
 {
-    struct MapVisitor<T> {
-        default: T,
-    }
+    struct MapVisitor;
 
-    impl<'de, T: serde::Deserialize<'de>> Visitor<'de> for MapVisitor<T> {
-        type Value = T;
+    impl<'de> Visitor<'de> for MapVisitor {
+        type Value = Map;
 
         fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
             formatter.write_str("map")
@@ -679,28 +607,10 @@ where
         where
             A: serde::de::SeqAccess<'de>,
         {
-            // Treat a sequence as the default for the type.
-            Ok(self.default)
+            // Treat a sequence as an empty map.
+            Ok(Map::default())
         }
     }
 
-    deserializer.deserialize_any(MapVisitor {
-        default: T::default(),
-    })
-}
-
-fn deserialize_message_properties<'de, D>(deserializer: D) -> Result<MessageProperties, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    deserialize_map_or_seq::<MessageProperties, D>(deserializer)
-}
-
-fn deserialize_runtime_parameter_value<'de, D>(
-    deserializer: D,
-) -> Result<RuntimeParameterValue, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    deserialize_map_or_seq::<RuntimeParameterValue, D>(deserializer)
+    deserializer.deserialize_any(MapVisitor)
 }

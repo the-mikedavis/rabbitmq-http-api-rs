@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use rabbitmq_http_client::requests::{RuntimeParameterDefinition, RuntimeParameterValue};
 use rabbitmq_http_client::responses::RuntimeParameter;
 use rabbitmq_http_client::{blocking::Client, requests::VirtualHostParams};
@@ -88,7 +90,7 @@ fn test_deserialize_sequence_value() {
 
     let expected_value: RuntimeParameterValue = serde_json::Map::new();
 
-    assert_eq!(param.value.0, expected_value);
+    assert_eq!(param.value.deref(), &expected_value);
 }
 
 //

@@ -14,7 +14,7 @@ use reqwest::{
 };
 use serde::Serialize;
 use serde_json::{json, Map, Value};
-use std::{collections::HashMap, fmt::Display};
+use std::{collections::HashMap, fmt::Display, ops::Deref};
 
 use thiserror::Error;
 
@@ -626,7 +626,9 @@ impl<'a> Client<'a> {
 
         let bs: Vec<&BindingInfo> = bindings
             .iter()
-            .filter(|b| b.source == source && b.routing_key == routing_key && b.arguments.0 == args)
+            .filter(|b| {
+                b.source == source && b.routing_key == routing_key && b.arguments.deref() == &args
+            })
             .collect();
         match bs.len() {
             0 => Err(Error::NotFound()),

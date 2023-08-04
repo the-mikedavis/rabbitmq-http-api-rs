@@ -1,7 +1,7 @@
 use rabbitmq_http_client::{
     blocking::Client,
     requests::{self, QueueParams},
-    responses::{GetMessage, MessageProperties, MessageRouted},
+    responses::{GetMessage, MessageRouted},
 };
 use serde_json::{json, Map, Value};
 
@@ -49,7 +49,7 @@ fn test_publish_and_get() {
             exchange: "".to_owned(),
             routing_key: "rust.tests.cq.publish_and_get".to_owned(),
             message_count: 1,
-            properties: MessageProperties::default(),
+            properties: Default::default(),
             payload: "rust test 1".to_owned(),
             payload_encoding: "string".to_owned()
         }]
@@ -58,7 +58,6 @@ fn test_publish_and_get() {
     let result7 = rc.get_messages(vhost, queue, 1, "ack_requeue_false");
     assert!(result7.is_ok(), "get_messages returned {:?}", result7);
 
-    let props = rabbitmq_http_client::responses::MessageProperties(props);
     let result8 = result7.unwrap();
     assert_eq!(
         result8,
@@ -68,7 +67,7 @@ fn test_publish_and_get() {
             exchange: "".to_owned(),
             routing_key: "rust.tests.cq.publish_and_get".to_owned(),
             message_count: 0,
-            properties: props,
+            properties: props.into(),
             payload: "rust test 2".to_owned(),
             payload_encoding: "string".to_owned()
         }]
